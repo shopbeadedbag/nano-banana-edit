@@ -174,6 +174,17 @@ const App: React.FC = () => {
     { q: 'How do I use the AI image editor?', a: 'Simply upload your image, type a description of the change you want to make (e.g., "add a pirate hat" or "change background to a beach"), and click "Generate". The AI will process your request and create a new image.' },
     { q: 'What kind of edits can I make?', a: 'You can perform a wide range of edits, including adding or removing objects, changing backgrounds, applying filters, adjusting colors, retouching portraits, and much more. If you can describe it, Nano Banana can likely create it.' },
   ];
+  
+  const suggestedPrompts = [
+      'Change the background to a futuristic cityscape',
+      'Add a pirate hat',
+      'Make it look like an oil painting',
+      'Turn the subject into a cartoon character',
+      'Add a magical glowing aura',
+      'Change the season to winter with snow',
+      'Place a dragon in the sky',
+      'Apply a vintage film look',
+  ];
 
   const toggleFaq = (index: number) => {
     setActiveFaq(activeFaq === index ? null : index);
@@ -270,6 +281,22 @@ const App: React.FC = () => {
                             <span>{prompt.length}/2000</span>
                             <button onClick={handleCopyPrompt} className="hover:text-white transition-colors" aria-label="Copy prompt"><CopyIcon className="w-4 h-4" /></button>
                             <button onClick={() => setPrompt('')} className="hover:text-white transition-colors" aria-label="Clear prompt"><XIcon className="w-4 h-4" /></button>
+                        </div>
+                    </div>
+
+                    {/* Suggested Prompts */}
+                    <div>
+                        <p className="text-sm text-zinc-400 mb-2">✨ Try these ideas:</p>
+                        <div className="flex flex-wrap gap-2">
+                            {suggestedPrompts.map((p) => (
+                                <button
+                                    key={p}
+                                    onClick={() => setPrompt(p)}
+                                    className="px-3 py-1 bg-zinc-800 text-zinc-300 rounded-full text-xs hover:bg-zinc-700 transition-colors"
+                                >
+                                    {p}
+                                </button>
+                            ))}
                         </div>
                     </div>
                     
