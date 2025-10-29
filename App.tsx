@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { ImageFile } from './types';
 import { editImage } from './services/geminiService';
-import { LogoIcon, UploadIcon, StarIcon, ChevronDownIcon, ArrowRightIcon, SpinnerIcon, RetryIcon, ShareIcon, XIcon, GlobeIcon, MenuIcon } from './components/icons';
+import { LogoIcon, StarIcon, ChevronDownIcon, ArrowRightIcon, SpinnerIcon, RetryIcon, ShareIcon, XIcon, GlobeIcon, MenuIcon, InfoIcon, ResetIcon, CopyIcon, ImageIcon } from './components/icons';
 
 const fileToImageFile = (file: File): Promise<ImageFile> => {
   return new Promise((resolve, reject) => {
@@ -16,6 +16,67 @@ const fileToImageFile = (file: File): Promise<ImageFile> => {
   });
 };
 
+const getAspectRatioFromString = (ratio: string): number => {
+    const [w, h] = ratio.split(':').map(Number);
+    return w / h;
+};
+
+const cropImage = (imageUrl: string, targetRatioString: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                return reject(new Error('Could not get canvas context'));
+            }
+
+            const originalWidth = img.width;
+            const originalHeight = img.height;
+            const originalRatio = originalWidth / originalHeight;
+            const targetRatio = getAspectRatioFromString(targetRatioString);
+
+            let cropWidth, cropHeight, cropX, cropY;
+
+            if (originalRatio > targetRatio) {
+                // Original image is wider than target, crop the width
+                cropHeight = originalHeight;
+                cropWidth = originalHeight * targetRatio;
+                cropX = (originalWidth - cropWidth) / 2;
+                cropY = 0;
+            } else {
+                // Original image is taller than target, crop the height
+                cropWidth = originalWidth;
+                cropHeight = originalWidth / targetRatio;
+                cropX = 0;
+                cropY = (originalHeight - cropHeight) / 2;
+            }
+
+            canvas.width = cropWidth;
+            canvas.height = cropHeight;
+
+            ctx.drawImage(
+                img,
+                cropX,
+                cropY,
+                cropWidth,
+                cropHeight,
+                0,
+                0,
+                cropWidth,
+                cropHeight
+            );
+
+            // You can change the output format here if needed, e.g., 'image/jpeg'
+            resolve(canvas.toDataURL('image/png'));
+        };
+        img.onerror = (error) => reject(error);
+        img.src = imageUrl;
+    });
+};
+
+
 const App: React.FC = () => {
   const [originalImage, setOriginalImage] = useState<ImageFile | null>(null);
   const [editedImage, setEditedImage] = useState<string | null>(null);
@@ -26,6 +87,9 @@ const App: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState('English');
+  const [autoRatio, setAutoRatio] = useState(true);
+  const [aspectRatio, setAspectRatio] = useState('1:1');
+
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const langMenuRef = useRef<HTMLDivElement>(null);
@@ -46,22 +110,22 @@ const App: React.FC = () => {
   const handleFileSelect = () => {
     fileInputRef.current?.click();
   };
+  
+  const handleCopyPrompt = () => {
+    navigator.clipboard.writeText(prompt);
+  };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setIsLoading(true);
       setError(null);
       setEditedImage(null);
-      setPrompt('');
       try {
         const imageFile = await fileToImageFile(file);
         setOriginalImage(imageFile);
       } catch (err) {
         setError('Failed to load image. Please try another file.');
         console.error(err);
-      } finally {
-        setIsLoading(false);
       }
     }
   };
@@ -75,22 +139,17 @@ const App: React.FC = () => {
     setError(null);
     setEditedImage(null);
     try {
-      const newImage = await editImage(originalImage.base64, originalImage.mimeType, prompt);
-      setEditedImage(newImage);
+      const newImageFromApi = await editImage(originalImage.base64, originalImage.mimeType, prompt);
+      if (!autoRatio) {
+          const croppedImage = await cropImage(newImageFromApi, aspectRatio);
+          setEditedImage(croppedImage);
+      } else {
+          setEditedImage(newImageFromApi);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred.');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const resetEditor = () => {
-    setOriginalImage(null);
-    setEditedImage(null);
-    setPrompt('');
-    setError(null);
-    if(fileInputRef.current) {
-      fileInputRef.current.value = '';
     }
   };
   
@@ -116,21 +175,12 @@ const App: React.FC = () => {
     { q: 'What kind of edits can I make?', a: 'You can perform a wide range of edits, including adding or removing objects, changing backgrounds, applying filters, adjusting colors, retouching portraits, and much more. If you can describe it, Nano Banana can likely create it.' },
   ];
 
-  const promptSuggestions = [
-    'Add a retro, vintage filter',
-    'Change the background to a futuristic city',
-    'Make the image black and white',
-    'Add a funny hat to the main subject',
-    'Turn the photo into an oil painting',
-    'Make the colors more vibrant',
-  ];
-
   const toggleFaq = (index: number) => {
     setActiveFaq(activeFaq === index ? null : index);
   };
 
   return (
-    <div className="bg-black text-gray-200 font-sans antialiased">
+    <div className="bg-[#0b0b0b] text-gray-300 font-sans antialiased">
        <header className="sticky top-0 z-50 backdrop-blur-sm bg-black/80 border-b border-zinc-800">
             <nav className="container mx-auto px-4 flex items-center justify-between h-16">
                 <a href="#" className="flex items-center space-x-2">
@@ -198,93 +248,115 @@ const App: React.FC = () => {
         </section>
 
         {/* Editor Section */}
-        <section id="editor" className="bg-zinc-900/50 rounded-2xl p-4 md:p-8 mb-24">
-          {!originalImage ? (
-            <div
-              onClick={handleFileSelect}
-              className="relative block w-full border-2 border-dashed border-gray-600 rounded-lg p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer transition-colors"
-            >
-              <UploadIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <button
-                type="button"
-                className="mt-4 relative inline-flex items-center px-8 py-3 border border-transparent shadow-sm text-lg font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-blue-500"
-              >
-                Upload Image
-              </button>
-              <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} accept="image/png, image/jpeg, image/webp, image/heic" />
-              <p className="mt-2 text-xs text-gray-500">.png, .jpeg, .webp, .heic</p>
-            </div>
-          ) : (
-            <div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
-                <div className="flex flex-col items-center">
-                  <h3 className="text-lg font-semibold mb-2">Original</h3>
-                  <div className="aspect-square w-full bg-zinc-800 rounded-lg overflow-hidden">
-                    <img src={originalImage.dataUrl} alt="Original upload" className="w-full h-full object-contain" />
-                  </div>
-                </div>
-                <div className="flex flex-col items-center">
-                  <h3 className="text-lg font-semibold mb-2">Edited</h3>
-                  <div className="aspect-square w-full bg-zinc-800 rounded-lg flex items-center justify-center overflow-hidden">
-                    {isLoading && !editedImage && (
-                       <div className="flex flex-col items-center text-gray-400">
-                         <svg className="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                         </svg>
-                         <p className="mt-2">Generating...</p>
-                       </div>
-                    )}
-                    {editedImage && !isLoading && (
-                        <img src={editedImage} alt="Edited result" className="w-full h-full object-contain" />
-                    )}
-                    {!editedImage && !isLoading && (
-                      <div className="text-gray-500">Your edited image will appear here</div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
-              
-              <div className="mt-6 flex flex-col md:flex-row gap-4 items-start">
-                  <div className="w-full">
-                    <textarea
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      placeholder="e.g., Add a pirate hat and an eye-patch"
-                      className="w-full bg-zinc-800 border border-gray-700 rounded-md p-3 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                      rows={2}
-                    />
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {promptSuggestions.map((suggestion) => (
-                        <button
-                          key={suggestion}
-                          onClick={() => setPrompt(suggestion)}
-                          className="px-3 py-1 bg-zinc-700 text-sm text-gray-300 rounded-full hover:bg-zinc-600 transition-colors"
-                        >
-                          {suggestion}
-                        </button>
-                      ))}
+        <section id="editor" className="p-px bg-gradient-to-br from-pink-500/50 via-transparent to-yellow-500/50 rounded-3xl mb-24">
+          <div className="bg-[#121212] rounded-[23px] p-4 sm:p-6 md:p-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Left Controls Panel */}
+                <div className="lg:col-span-4 space-y-4 flex flex-col">
+                    {/* Prompt Input */}
+                    <div className="relative">
+                        <textarea
+                            value={prompt}
+                            onChange={(e) => {
+                                if (e.target.value.length <= 2000) {
+                                    setPrompt(e.target.value)
+                                }
+                            }}
+                            placeholder="Input prompt here"
+                            className="w-full bg-[#1c1c1c] border border-zinc-700 rounded-lg p-3 text-white placeholder-gray-500 focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition resize-none h-32"
+                            maxLength={2000}
+                        />
+                        <div className="absolute bottom-2 right-2 flex items-center space-x-2 text-xs text-zinc-400">
+                            <span>{prompt.length}/2000</span>
+                            <button onClick={handleCopyPrompt} className="hover:text-white transition-colors" aria-label="Copy prompt"><CopyIcon className="w-4 h-4" /></button>
+                            <button onClick={() => setPrompt('')} className="hover:text-white transition-colors" aria-label="Clear prompt"><XIcon className="w-4 h-4" /></button>
+                        </div>
                     </div>
-                  </div>
-                  <button
-                    onClick={handleSubmit}
-                    disabled={isLoading}
-                    className="w-full md:w-auto px-8 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
-                  >
-                    {isLoading ? 'Generating...' : 'Generate'}
-                  </button>
-              </div>
-              <div className="mt-4 flex flex-col md:flex-row gap-4">
-                <button onClick={resetEditor} className="w-full md:w-auto px-6 py-2 bg-gray-700 text-white font-medium rounded-md hover:bg-gray-600 transition-colors">Start Over</button>
-                {editedImage && (
-                  <a href={editedImage} download="edited-image.png" className="w-full md:w-auto text-center px-6 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition-colors">Download</a>
-                )}
-              </div>
+                    
+                    {/* Ratio */}
+                    <div>
+                        <label className="text-sm font-medium text-gray-300">Ratio</label>
+                        <div className="mt-2 space-y-2">
+                            <div className="flex items-center justify-between bg-[#1c1c1c] border border-zinc-700 rounded-lg p-3">
+                                <div className="flex items-center">
+                                    <span className="text-sm">Auto Ratio</span>
+                                    <InfoIcon className="w-4 h-4 ml-1.5 text-zinc-400" />
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked={autoRatio} onChange={() => setAutoRatio(!autoRatio)} className="sr-only peer" />
+                                    <div className="w-11 h-6 bg-zinc-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-500"></div>
+                                </label>
+                            </div>
+                            <select 
+                                value={aspectRatio}
+                                onChange={(e) => setAspectRatio(e.target.value)}
+                                disabled={autoRatio}
+                                className="w-full bg-[#1c1c1c] border border-zinc-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500 appearance-none bg-no-repeat bg-right-3 disabled:opacity-50 disabled:cursor-not-allowed" 
+                                style={{backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.25em'}}>
+                                <option value="1:1">1:1</option>
+                                <option value="16:9">16:9</option>
+                                <option value="9:16">9:16</option>
+                                <option value="4:3">4:3</option>
+                                <option value="3:4">3:4</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Images */}
+                    <div>
+                        <label className="text-sm font-medium text-gray-300">Images</label>
+                        <div onClick={handleFileSelect} className="mt-2 w-full h-32 border-2 border-dashed border-zinc-600 rounded-lg flex items-center justify-center text-center hover:border-zinc-400 cursor-pointer transition-colors bg-black/20">
+                            {originalImage ? (
+                                <img src={originalImage.dataUrl} alt="uploaded preview" className="max-h-full max-w-full object-contain p-1" />
+                            ) : (
+                                <p className="text-zinc-400 text-sm">Click / Drag & Drop to Upload</p>
+                            )}
+                            <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} accept="image/png, image/jpeg, image/webp, image/heic" />
+                        </div>
+                    </div>
+
+                    <div className="border-t border-zinc-700 !mt-auto"></div>
+                    
+                    {/* Generate Button */}
+                    <button
+                        onClick={handleSubmit}
+                        disabled={isLoading || !originalImage || !prompt}
+                        className="w-full p-3 text-center font-bold text-black bg-gradient-to-r from-pink-500 to-yellow-400 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity flex items-center justify-center text-base"
+                    >
+                        {isLoading ? (
+                            <SpinnerIcon className="w-6 h-6 animate-spin text-black" />
+                        ) : (
+                            <>
+                                Generate Now
+                                <span className="ml-2 inline-flex items-center justify-center w-7 h-7 rounded-full bg-yellow-300/50 text-xs font-bold ring-1 ring-inset ring-black/20">40</span>
+                            </>
+                        )}
+                    </button>
+                    {error && <p className="text-red-500 text-sm text-center -mt-2">{error}</p>}
+                </div>
+                
+                {/* Center Output Panel */}
+                <div className="lg:col-span-8 bg-black rounded-2xl flex items-center justify-center min-h-[40vh] lg:min-h-0 relative overflow-hidden">
+                    {isLoading && (
+                        <div className="flex flex-col items-center text-zinc-400 z-10">
+                            <SpinnerIcon className="w-10 h-10 animate-spin text-white" />
+                            <p className="mt-2">Generating...</p>
+                        </div>
+                    )}
+                    {!isLoading && editedImage && (
+                        <img src={editedImage} alt="Edited result" className="w-full h-full object-contain rounded-2xl" />
+                    )}
+                    {!isLoading && !editedImage && (
+                        <div className="text-center text-zinc-500 z-10">
+                            <ImageIcon className="w-16 h-16 mx-auto opacity-30" />
+                            <p className="mt-4">Create with Flux AI now!</p>
+                        </div>
+                    )}
+                </div>
             </div>
-          )}
+          </div>
         </section>
+
 
         {/* How It Works Section */}
         <section id="how-it-works" className="mb-24">
@@ -402,7 +474,7 @@ const App: React.FC = () => {
             <div className="bg-zinc-900/50 border-2 border-dashed border-gray-700 rounded-2xl py-16 px-8">
                 <h2 className="text-4xl md:text-5xl font-extrabold mb-4">Edit your photos with Nano Banana</h2>
                 <p className="text-gray-400 mb-8">Free canvas-based photo editor—no signup, no credit card required.</p>
-                <button onClick={() => document.getElementById('editor')?.scrollIntoView()} className="px-8 py-3 bg-white text-black font-semibold rounded-md hover:bg-gray-200 transition-colors">
+                <button onClick={() => document.getElementById('editor')?.scrollIntoView({behavior: 'smooth'})} className="px-8 py-3 bg-white text-black font-semibold rounded-md hover:bg-gray-200 transition-colors">
                     Get started
                 </button>
             </div>
