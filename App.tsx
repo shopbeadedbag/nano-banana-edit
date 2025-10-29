@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { ImageFile } from './types';
 import { editImage } from './services/geminiService';
-import { LogoIcon, StarIcon, ChevronDownIcon, ArrowRightIcon, SpinnerIcon, RetryIcon, ShareIcon, XIcon, GlobeIcon, MenuIcon, InfoIcon, ResetIcon, CopyIcon, ImageIcon } from './components/icons';
+import { LogoIcon, StarIcon, ChevronDownIcon, ArrowRightIcon, SpinnerIcon, RetryIcon, ShareIcon, XIcon, GlobeIcon, MenuIcon, InfoIcon, ResetIcon, CopyIcon, ImageIcon, DownloadIcon } from './components/icons';
 
 const fileToImageFile = (file: File): Promise<ImageFile> => {
   return new Promise((resolve, reject) => {
@@ -113,6 +113,16 @@ const App: React.FC = () => {
   
   const handleCopyPrompt = () => {
     navigator.clipboard.writeText(prompt);
+  };
+  
+  const handleDownload = () => {
+    if (!editedImage) return;
+    const link = document.createElement('a');
+    link.href = editedImage;
+    link.download = 'edited-by-nano-banana.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -342,24 +352,36 @@ const App: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="border-t border-zinc-700 !mt-auto"></div>
-                    
-                    {/* Generate Button */}
-                    <button
-                        onClick={handleSubmit}
-                        disabled={isLoading || !originalImage || !prompt}
-                        className="w-full p-3 text-center font-bold text-black bg-gradient-to-r from-pink-500 to-yellow-400 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity flex items-center justify-center text-base"
-                    >
-                        {isLoading ? (
-                            <SpinnerIcon className="w-6 h-6 animate-spin text-black" />
-                        ) : (
-                            <>
-                                Generate Now
-                                <span className="ml-2 inline-flex items-center justify-center w-7 h-7 rounded-full bg-yellow-300/50 text-xs font-bold ring-1 ring-inset ring-black/20">40</span>
-                            </>
-                        )}
-                    </button>
-                    {error && <p className="text-red-500 text-sm text-center -mt-2">{error}</p>}
+                    <div className="border-t border-zinc-700 !mt-auto pt-4">
+                      <div className="space-y-3">
+                          {/* Generate Button */}
+                          <button
+                              onClick={handleSubmit}
+                              disabled={isLoading || !originalImage || !prompt}
+                              className="w-full p-3 text-center font-bold text-black bg-gradient-to-r from-pink-500 to-yellow-400 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity flex items-center justify-center text-base"
+                          >
+                              {isLoading ? (
+                                  <SpinnerIcon className="w-6 h-6 animate-spin text-black" />
+                              ) : (
+                                  <>
+                                      Generate Now
+                                      <span className="ml-2 inline-flex items-center justify-center w-7 h-7 rounded-full bg-yellow-300/50 text-xs font-bold ring-1 ring-inset ring-black/20">40</span>
+                                  </>
+                              )}
+                          </button>
+                          {/* Download Button */}
+                          <button
+                              onClick={handleDownload}
+                              disabled={!editedImage || isLoading}
+                              className="w-full p-3 text-center font-bold text-white bg-zinc-800 border border-zinc-700 rounded-lg hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center text-base"
+                              aria-label="Download edited image"
+                          >
+                              <DownloadIcon className="w-5 h-5 mr-2" />
+                              <span>Download</span>
+                          </button>
+                      </div>
+                      {error && <p className="text-red-500 text-sm text-center mt-3">{error}</p>}
+                    </div>
                 </div>
                 
                 {/* Center Output Panel */}
