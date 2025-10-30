@@ -1,0 +1,117 @@
+{
+  "howToUse": {
+    "title": "How to Use Nano Banana AI Image Editor",
+    "imageUrl": "https://storage.googleapis.com/aistudio-hosting/generative-ai-studio/assets/app-flea/how-to-use.png",
+    "steps": [
+      {
+        "number": 1,
+        "title": "Upload Your Image",
+        "description": "Drag and drop or browse to select any photo you want to edit. Nano Banana supports all common image formats including JPG, PNG, and WEBP."
+      },
+      {
+        "number": 2,
+        "title": "Describe Your Vision",
+        "description": "Type a natural language prompt describing how you want to transform your image. Be as creative or specific as you like - from simple color changes to complex artistic transformations."
+      },
+      {
+        "number": 3,
+        "title": "Choose Your Model",
+        "description": "Select Fast for quick edits, Pro for better quality, or Ultra for the best results. Each model is optimized for different use cases and credit costs."
+      },
+      {
+        "number": 4,
+        "title": "Apply and Download",
+        "description": "Click Apply and watch AI transform your image in seconds. Browse your edit history, make adjustments, or download your final masterpiece."
+      }
+    ]
+  },
+  "features": [
+    {
+      "title": "Nano Banana Conversational AI Photo Editing",
+      "description": "Nano Banana lets you edit images the way you think - with natural conversation. No complex tools or tutorials needed. Just describe what you want and Nano Banana's advanced AI understands and executes your creative vision instantly. From simple adjustments to dramatic transformations, Nano Banana's conversational editing makes professional results accessible to everyone.",
+      "imageUrl": "https://storage.googleapis.com/aistudio-hosting/generative-ai-studio/assets/app-flea/conversational-ai.png",
+      "imagePosition": "left"
+    },
+    {
+      "title": "Nano Banana Edit History & Version Control",
+      "description": "Never lose your creative progress with Nano Banana. The AI editor automatically saves every edit in an intuitive visual timeline. Click any previous Nano Banana version to continue editing from that point, or compare results side-by-side. Your Nano Banana editing journey is preserved, giving you complete creative freedom to explore and experiment.",
+      "imageUrl": "https://storage.googleapis.com/aistudio-hosting/generative-ai-studio/assets/app-flea/version-control.png",
+      "imagePosition": "right"
+    },
+    {
+      "title": "Nano Banana AI Models - Fast, Pro, and Ultra",
+      "description": "Nano Banana offers three powerful AI models to choose from. Nano Banana Fast delivers quick results for simple edits. Nano Banana Pro provides enhanced quality for detailed work. Nano Banana Ultra unleashes maximum AI power for professional-grade transformations. Switch between Nano Banana models anytime to match your project needs.",
+      "imageUrl": "https://storage.googleapis.com/aistudio-hosting/generative-ai-studio/assets/app-flea/ai-models.png",
+      "imagePosition": "left"
+    }
+  ],
+  "transformations": {
+    "title": "Popular Nano Banana AI Image Transformations",
+    "subtitle": "Explore trending AI-powered photo effects and creative transformations with Nano Banana. From celebrity selfies to vintage time travel, 3D figurines to artistic masterpieces - discover unlimited creative possibilities with our AI image editor.",
+    "items": [
+      {
+        "title": "AI Celebrity Selfies",
+        "description": "Create realistic selfie photos with your favorite celebrities using Nano Banana AI. Upload your photo and generate authentic-looking moments with movie stars, musicians, and famous personalities in stunning quality.",
+        "imageUrl": "https://storage.googleapis.com/aistudio-hosting/generative-ai-studio/assets/app-flea/transformation-1.png"
+      },
+      {
+        "title": "3D Figurine & Collectible Art",
+        "description": "Transform your photos into high-end collectible figurines with professional packaging design. Nano Banana creates museum-quality 3D models, perfect for personalized merchandise, display art, and unique gifts.",
+        "imageUrl": "https://storage.googleapis.com/aistudio-hosting/generative-ai-studio/assets/app-flea/transformation-2.png"
+      },
+      {
+        "title": "LEGO Minifigure Creator",
+        "description": "Instantly design yourself into a custom LEGO minifigure with personalized animal companion in a glass display case. Create unique collectible-style artwork with crisp details and museum-quality presentation.",
+        "imageUrl": "https://storage.googleapis.com/aistudio-hosting/generative-ai-studio/assets/app-flea/transformation-3.png"
+      },
+      {
+        "title": "Ghibli & Anime Art Style",
+        "description": "Transform your photos into beautiful Studio Ghibli-style artwork with Nano Banana AI. Get hand-drawn anime aesthetics, watercolor backgrounds, and that magical Ghibli feeling in your images.",
+        "imageUrl": "https://storage.googleapis.com/aistudio-hosting/generative-ai-studio/assets/app-flea/transformation-4.png"
+      },
+      {
+        "title": "DSLR Professional",
+        "description": "Achieve cinematic quality with professional DSLR camera bokeh backgrounds and professional color grading to your photos.",
+        "imageUrl": "https://storage.googleapis.com/aistudio-hosting/generative-ai-studio/assets/app-flea/transformation-5.png"
+      }
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Do you have a question?",
+    "questions": [
+      {
+        "q": "What is Nano Banana AI Image Editor?",
+        "a": "Nano Banana is a conversational AI image editor that transforms photos based on natural language descriptions. Simply upload an image, describe how you want to edit it, and our AI will apply your changes instantly. It combines the power of advanced AI models with an intuitive chat-based interface."
+      },
+      {
+        "q": "How do I edit images with AI?",
+        "a": "Upload your photo, type a description of the edits you want (like \"make it sunset\" or \"add dramatic lighting\"), select your preferred AI model (Fast, Pro, or Ultra), and click Apply. The AI will process your request and show you the edited image in seconds."
+      },
+      {
+        "q": "What are the different AI models?",
+        "a": "Fast model (1 credit) provides quick edits for simple changes. Pro model (3 credits) offers better quality for detailed work. Ultra model (5 credits) delivers the highest quality results for professional-grade transformations. Choose based on your needs and quality requirements."
+      },
+      {
+        "q": "Can I undo or go back to previous edits?",
+        "a": "Yes! Nano Banana automatically saves your edit history with up to 10 versions. Click any previous version in the history stack to continue editing from that point or download earlier versions."
+      },
+      {
+        "q": "What image formats are supported?",
+        "a": "Nano Banana supports all common image formats including JPG, JPEG, PNG, WEBP, and more. Images must be at least 250x250 pixels for best results."
+      },
+      {
+        "q": "How many credits does it cost?",
+        "a": "Each AI model has a different credit cost. Fast is 1 credit, Pro is 3 credits, and Ultra is 5 credits per generation. Costs may vary based on image size and complexity."
+      },
+      {
+        "q": "Can I edit the same image multiple times?",
+        "a": "Absolutely. You can apply as many edits as you like to a single image. Each new edit builds on the previous one, and you can always go back to an earlier version in your edit history."
+      },
+      {
+        "q": "Is my image data private and secure?",
+        "a": "We prioritize your privacy. Uploaded images are processed securely and are not used for any purpose other than applying your requested edits. Please refer to our privacy policy for more details."
+      }
+    ]
+  }
+}
