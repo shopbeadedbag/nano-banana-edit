@@ -100,3 +100,23 @@ export const ImageIcon = ({ className }: { className?: string }) => (
         <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
     </svg>
 );
+
+export const CloudUploadIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5v-11m0 0L9.5 8m2.5-2.5L14.5 8" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20 17.5a4.5 4.5 0 00-9 0M7 17.5a4.5 4.5 0 019 0" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.5 17.5a4.5 4.5 0 00-9 0" />
+    </svg>
+);
+
+export const ReferenceUploadIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 64 64" fill="none" >
+        <path d="M32 5.33331V21.3333" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M24 13.3333L32 5.33331L40 13.3333" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M50.6667 21.3333V48C50.6667 49.7681 49.9643 51.4638 48.714 52.714C47.4638 53.9643 45.7681 54.6666 44 54.6666H17.3333C15.5652 54.6666 13.8695 53.9643 12.6193 52.714C11.369 51.4638 10.6667 49.7681 10.6667 48V18.6666C10.6667 16.8985 11.369 15.2029 12.6193 13.9526C13.8695 12.7024 15.5652 12 17.3333 12H34.6667" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M56 16L48 24" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M46.6667 9.33331L50.6667 5.33331C51.2543 4.74573 52.0783 4.42065 52.9333 4.42065C53.7884 4.42065 54.6124 4.74573 55.2 5.33331C55.7876 5.9209 56.1127 6.74491 56.1127 7.59998C56.1127 8.45504 55.7876 9.27906 55.2 9.86664L51.2 13.8666" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M10.6667 45.3333L21.3333 34.6666C22.56 33.44 24.44 33.44 25.6667 34.6666L44 53.3333" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+        <circle cx="21.3333" cy="26.6666" r="4" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+);
