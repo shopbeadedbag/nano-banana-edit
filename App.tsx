@@ -91,49 +91,142 @@ const App: React.FC = () => {
   const [aspectRatio, setAspectRatio] = useState('1:1');
 
   // Content previously from content.json
-  const content = {
-    howToUse: {
-      title: "How to Use Nano Banana AI Image Editor",
-      imageUrl: "https://devtool.tech/api/placeholder/600/600",
-      steps: [
-        { number: 1, title: "Upload Your Image", description: "Drag and drop or browse to select any photo you want to edit. Nano Banana supports all common image formats including JPG, PNG, and WEBP." },
-        { number: 2, title: "Describe Your Vision", description: "Type a natural language prompt describing how you want to transform your image. Be as creative or specific as you like - from simple color changes to complex artistic transformations." },
-        { number: 3, title: "Choose Your Model", description: "Select Fast for quick edits, Pro for better quality, or Ultra for the best results. Each model is optimized for different use cases and credit costs." },
-        { number: 4, title: "Apply and Download", description: "Click Apply and watch AI transform your image in seconds. Browse your edit history, make adjustments, or download your final masterpiece." }
-      ]
+const content = {
+  howToUse: {
+    title: "How to Use Nano Banana AI Image Editor",
+    imageUrl: "https://pixlr.com/images/prompter/nano-banan-ai-image-editor.webp",
+    steps: [
+      { number: 1, title: "Upload Your Image", description: "Drag and drop or browse to select any photo you want to edit. Nano Banana supports all common image formats including JPG, PNG, and WEBP." },
+      { number: 2, title: "Describe Your Vision", description: "Type a natural language prompt describing how you want to transform your image. Be as creative or specific as you like - from simple color changes to complex artistic transformations." },
+      { number: 3, title: "Choose Your Model", description: "Select Fast for quick edits, Pro for better quality, or Ultra for the best results. Each model is optimized for different use cases and credit costs." },
+      { number: 4, title: "Apply and Download", description: "Click Apply and watch AI transform your image in seconds. Browse your edit history, make adjustments, or download your final masterpiece." }
+    ]
+  },
+  features: [
+    {
+      title: "Nano Banana Conversational AI Photo Editing",
+      description: "Nano Banana lets you edit images the way you think - with natural conversation. No complex tools or tutorials needed. Just describe what you want and Nano Banana's advanced AI understands and executes your creative vision instantly. From simple adjustments to dramatic transformations, Nano Banana's conversational editing makes professional results accessible to everyone.",
+      imageUrl: "https://pixlr.com/images/prompter/conversational.webp",
+      imagePosition: "right"
     },
-    features: [
-      { title: "Nano Banana Conversational AI Photo Editing", description: "Nano Banana lets you edit images the way you think - with natural conversation. No complex tools or tutorials needed. Just describe what you want and Nano Banana's advanced AI understands and executes your creative vision instantly. From simple adjustments to dramatic transformations, Nano Banana's conversational editing makes professional results accessible to everyone.", imageUrl: "https://devtool.tech/api/placeholder/600/600", imagePosition: "left" },
-      { title: "Nano Banana Edit History & Version Control", description: "Never lose your creative progress with Nano Banana. The AI editor automatically saves every edit in an intuitive visual timeline. Click any previous Nano Banana version to continue editing from that point, or compare results side-by-side. Your Nano Banana editing journey is preserved, giving you complete creative freedom to explore and experiment.", imageUrl: "https://devtool.tech/api/placeholder/600/600", imagePosition: "right" },
-      { title: "Nano Banana AI Models - Fast, Pro, and Ultra", description: "Nano Banana offers three powerful AI models to choose from. Nano Banana Fast delivers quick results for simple edits. Nano Banana Pro provides enhanced quality for detailed work. Nano Banana Ultra unleashes maximum AI power for professional-grade transformations. Switch between Nano Banana models anytime to match your project needs.", imageUrl: "https://devtool.tech/api/placeholder/600/600", imagePosition: "left" }
-    ],
-    transformations: {
-      title: "Popular Nano Banana AI Image Transformations",
-      subtitle: "Explore trending AI-powered photo effects and creative transformations with Nano Banana. From celebrity selfies to vintage time travel, 3D figurines to artistic masterpieces - discover unlimited creative possibilities with our AI image editor.",
-      items: [
-        { title: "AI Celebrity Selfies", description: "Create realistic selfie photos with your favorite celebrities using Nano Banana AI. Upload your photo and generate authentic-looking moments with movie stars, musicians, and famous personalities in stunning quality.", imageUrl: "https://devtool.tech/api/placeholder/300/200" },
-        { title: "3D Figurine & Collectible Art", description: "Transform your photos into high-end collectible figurines with professional packaging design. Nano Banana creates museum-quality 3D models, perfect for personalized merchandise, display art, and unique gifts.", imageUrl: "https://devtool.tech/api/placeholder/300/200" },
-        { title: "LEGO Minifigure Creator", description: "Instantly design yourself into a custom LEGO minifigure with personalized animal companion in a glass display case. Create unique collectible-style artwork with crisp details and museum-quality presentation.", imageUrl: "https://devtool.tech/api/placeholder/300/200" },
-        { title: "Ghibli & Anime Art Style", description: "Transform your photos into beautiful Studio Ghibli-style artwork with Nano Banana AI. Get hand-drawn anime aesthetics, watercolor backgrounds, and that magical Ghibli feeling in your images.", imageUrl: "https://devtool.tech/api/placeholder/300/200" },
-        { title: "DSLR Professional", description: "Achieve cinematic quality with professional DSLR camera bokeh backgrounds and professional color grading to your photos.", imageUrl: "https://devtool.tech/api/placeholder/300/200" },
-        { title: "DSLR Professional", description: "Achieve cinematic quality with professional DSLR camera bokeh backgrounds and professional color grading to your photos.", imageUrl: "https://devtool.tech/api/placeholder/300/200" }
-      ]
+    {
+      title: "Nano Banana Edit History & Version Control",
+      description: "Never lose your creative progress with Nano Banana. The AI editor automatically saves every edit in an intuitive visual timeline. Click any previous Nano Banana version to continue editing from that point, or compare results side-by-side. Your Nano Banana editing journey is preserved, giving you complete creative freedom to explore and experiment.",
+      imageUrl: "https://pixlr.com/images/prompter/history.webp",
+      imagePosition: "left"
     },
-    faq: {
-      title: "Frequently Asked Questions",
-      subtitle: "Do you have a question?",
-      questions: [
-        { q: "What is Nano Banana AI Image Editor?", a: "Nano Banana is a conversational AI image editor that transforms photos based on natural language descriptions. Simply upload an image, describe how you want to edit it, and our AI will apply your changes instantly. It combines the power of advanced AI models with an intuitive chat-based interface." },
-        { q: "How do I edit images with AI?", a: "Upload your photo, type a description of the edits you want (like \"make it sunset\" or \"add dramatic lighting\"), select your preferred AI model (Fast, Pro, or Ultra), and click Apply. The AI will process your request and show you the edited image in seconds." },
-        { q: "What are the different AI models?", a: "Fast model (1 credit) provides quick edits for simple changes. Pro model (3 credits) offers better quality for detailed work. Ultra model (5 credits) delivers the highest quality results for professional-grade transformations. Choose based on your needs and quality requirements." },
-        { q: "Can I undo or go back to previous edits?", a: "Yes! Nano Banana automatically saves your edit history with up to 10 versions. Click any previous version in the history stack to continue editing from that point or download earlier versions." },
-        { q: "What image formats are supported?", a: "Nano Banana supports all common image formats including JPG, JPEG, PNG, WEBP, and more. Images must be at least 250x250 pixels for best results." },
-        { q: "How many credits does it cost?", a: "Each AI model has a different credit cost. Fast is 1 credit, Pro is 3 credits, and Ultra is 5 credits per generation. Costs may vary based on image size and complexity." },
-        { q: "Can I edit the same image multiple times?", a: "Absolutely. You can apply as many edits as you like to a single image. Each new edit builds on the previous one, and you can always go back to an earlier version in your edit history." },
-        { q: "Is my image data private and secure?", a: "We prioritize your privacy. Uploaded images are processed securely and are not used for any purpose other than applying your requested edits. Please refer to our privacy policy for more details." }
-      ]
+    {
+      title: "Nano Banana AI Models - Fast, Pro, and Ultra",
+      description: "Nano Banana offers three powerful AI models to choose from. Nano Banana Fast delivers quick results for simple edits. Nano Banana Pro provides enhanced quality for detailed work. Nano Banana Ultra unleashes maximum AI power for professional-grade transformations. Switch between Nano Banana models anytime to match your project needs.",
+      imageUrl: "https://pixlr.com/images/prompter/banana.webp",
+      imagePosition: "right"
     }
-  };
+  ],
+  transformations: {
+    title: "Popular Nano Banana AI Image Transformations",
+    subtitle: "Explore trending AI-powered photo effects and creative transformations with Nano Banana. From celebrity selfies to vintage time travel, 3D figurines to artistic masterpieces - discover unlimited creative possibilities with our AI image editor.",
+    items: [
+      {
+        title: "AI Celebrity Selfies",
+        description: "Create realistic selfie photos with your favorite celebrities using Nano Banana AI. Upload your photo and generate authentic-looking moments with movie stars, musicians, and famous personalities in stunning quality.",
+        imageUrl: "https://pixlr.com/images/prompter/example/selfies-celebrities.webp"
+      },
+      {
+        title: "3D Figurine & Collectible Art",
+        description: "Transform your photos into high-end collectible figurines with professional packaging design. Nano Banana creates museum-quality 3D models, perfect for personalized merchandise, display art, and unique gifts.",
+        imageUrl: "https://pixlr.com/images/prompter/example/3d-box-figurine.webp"
+      },
+      {
+        title: "LEGO Minifigure Creator",
+        description: "Convert yourself into a custom LEGO minifigure with personalized animal companion in a glass display case. Create unique collectible-style artwork with engraved details and museum-quality presentation.",
+        imageUrl: "https://pixlr.com/images/prompter/example/lego-me.webp"
+      },
+      {
+        title: "Ghibli & Anime Art Style",
+        description: "Transform your photos into beautiful Studio Ghibli-style artwork with Nano Banana AI. Get hand-drawn anime aesthetics, watercolor backgrounds, and that magical Ghibli feeling in your images.",
+        imageUrl: "https://pixlr.com/images/prompter/example/ghibli-style.webp"
+      },
+      {
+        title: "DSLR Professional Portraits",
+        description: "Achieve cinematic golden-hour portraits with professional DSLR quality using Nano Banana. Add bokeh backgrounds, perfect lighting, and film-grade color grading to your photos instantly.",
+        imageUrl: "https://pixlr.com/images/prompter/example/dslr-portraits.webp"
+      },
+      {
+        title: "Time Travel Transformations",
+        description: "Travel through decades with Nano Banana AI photo editor. Transform yourself into authentic 1890s Victorian portraits, groovy 1970s disco style, neon 1980s fashion, or any era with period-accurate clothing and aesthetics.",
+        imageUrl: "https://pixlr.com/images/prompter/example/me-as-1980.webp"
+      },
+      {
+        title: "Renaissance & Classical Art",
+        description: "Turn modern photos into timeless Renaissance masterpieces with Nano Banana. Create oil painting effects, classical portraiture, and museum-worthy artwork with authentic brush strokes and period styling.",
+        imageUrl: "https://pixlr.com/images/prompter/example/renaissance-painting.webp"
+      },
+      {
+        title: "Pop Star & Concert Scenes",
+        description: "Transform into a performing artist on stage with massive crowds and epic screens using Nano Banana AI. Create professional concert photography with dramatic stage lighting and arena-scale productions.",
+        imageUrl: "https://pixlr.com/images/prompter/example/pop-star.webp"
+      },
+      {
+        title: "Extreme Adventure Photography",
+        description: "Create breathtaking skydiving, mountain climbing, and extreme sports photos with Nano Banana AI. Generate hyperrealistic action shots with professional wide-angle camera effects and adrenaline-pumping perspectives.",
+        imageUrl: "https://pixlr.com/images/prompter/example/sky-diving.webp"
+      },
+      {
+        title: "Retro 16-bit Pixel Art",
+        description: "Convert your photos into nostalgic 16-bit pixel art and retro gaming graphics with Nano Banana. Perfect for creating vintage game-style avatars, social media content, and nostalgic digital art.",
+        imageUrl: "https://pixlr.com/images/prompter/example/pixel-art.webp"
+      },
+      {
+        title: "Artistic Silhouette Effects",
+        description: "Create mysterious and artistic silhouette photography with frosted glass effects using Nano Banana. Perfect for dramatic black and white portraits with professional gradient backgrounds and atmospheric lighting.",
+        imageUrl: "https://pixlr.com/images/prompter/example/blurred-silhouette.webp"
+      },
+      {
+        title: "AI Object & Background Removal",
+        description: "Remove unwanted objects, people, or background elements from photos while preserving all original details. Nano Banana's AI seamlessly fills removed areas maintaining resolution, sharpness, and natural textures.",
+        imageUrl: "https://pixlr.com/images/prompter/example/remove-objects.webp"
+      }
+    ]
+  },
+  faq: {
+    title: "Frequently Asked Questions",
+    subtitle: "Do you have a question?",
+    questions: [
+      {
+        q: "What is Nano Banana AI Image Editor?",
+        a: "Nano Banana is a conversational AI image editor that transforms photos based on natural language descriptions. Simply upload an image, describe how you want to edit it, and our AI will apply your changes instantly. It combines the power of advanced AI models with an intuitive chat-based interface."
+      },
+      {
+        q: "How do I edit images with AI?",
+        a: "Upload your photo, type a description of the edits you want (like \"make it sunset\" or \"add dramatic lighting\"), select your preferred AI model (Fast, Pro, or Ultra), and click Apply. The AI will process your request and show you the edited image in seconds."
+      },
+      {
+        q: "What are the different AI models?",
+        a: "Fast model (1 credit) provides quick edits for simple changes. Pro model (3 credits) offers better quality for detailed work. Ultra model (5 credits) delivers the highest quality results for professional-grade transformations. Choose based on your needs and quality requirements."
+      },
+      {
+        q: "Can I undo or go back to previous edits?",
+        a: "Yes! Nano Banana automatically saves your edit history with up to 10 versions. Click any previous version in the history stack to continue editing from that point or download earlier versions."
+      },
+      {
+        q: "What image formats are supported?",
+        a: "Nano Banana supports all common image formats including JPG, JPEG, PNG, WEBP, and more. Images must be at least 250x250 pixels for best results."
+      },
+      {
+        q: "How many credits does it cost?",
+        a: "Credit costs vary by AI model: Fast costs 1 credit, Pro costs 3 credits, and Ultra costs 5 credits per edit. You can purchase credits or subscribe to Pixlr Plus for unlimited editing."
+      },
+      {
+        q: "Can I edit the same image multiple times?",
+        a: "Absolutely! Each new prompt applies to your currently selected image in the history. You can continue refining and editing the same photo as many times as you want, building on previous edits or starting fresh from earlier versions."
+      },
+      {
+        q: "Is my image data private and secure?",
+        a: "Yes, your privacy is our priority. Uploaded images are processed securely and are not shared or used for training purposes. All images are handled according to our privacy policy and industry security standards."
+      }
+    ]
+  }
+};
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const langMenuRef = useRef<HTMLDivElement>(null);
@@ -478,7 +571,7 @@ const App: React.FC = () => {
         <section id="transformations" className="py-20 md:py-32 text-center">
           <h2 className="text-4xl font-bold text-white mb-6">{content.transformations.title}</h2>
           <p className="text-gray-400 max-w-3xl mx-auto mb-16">{content.transformations.subtitle}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {content.transformations.items.map((item, index) => (
               <div key={index} className="bg-[#2C2C2E] p-5 rounded-2xl text-left">
                 <img src={item.imageUrl} alt={item.title} className="rounded-lg w-full h-auto object-cover mb-4 aspect-[3/2]" />
