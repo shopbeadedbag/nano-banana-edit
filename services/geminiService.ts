@@ -1,5 +1,31 @@
 import { GoogleGenAI, Modality, Part } from "@google/genai";
 
+export const generateImageFromText = async (prompt: string): Promise<string> => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+  try {
+      const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash-image',
+          contents: {
+              parts: [{ text: prompt }],
+          },
+          config: {
+              responseModalities: [Modality.IMAGE],
+          },
+      });
+
+      for (const part of response.candidates[0].content.parts) {
+          if (part.inlineData) {
+              const base64ImageBytes: string = part.inlineData.data;
+              return `data:${part.inlineData.mimeType};base64,${base64ImageBytes}`;
+          }
+      }
+      throw new Error("No image was generated in the response.");
+  } catch (error) {
+      console.error("Error generating image with Gemini:", error);
+      throw new Error("Failed to generate image. Please try again.");
+  }
+};
+
 export const editImage = async (
   base64ImageData: string,
   mimeType: string,

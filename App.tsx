@@ -1,7 +1,8 @@
+
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { ImageFile } from './types';
-import { editImage } from './services/geminiService';
-import { LogoIcon, StarIcon, ChevronDownIcon, ArrowRightIcon, SpinnerIcon, RetryIcon, ShareIcon, XIcon, GlobeIcon, MenuIcon, InfoIcon, ResetIcon, CopyIcon, ImageIcon, DownloadIcon, CloudUploadIcon } from './components/icons';
+import { editImage, generateImageFromText } from './services/geminiService';
+import { LogoIcon, StarIcon, ChevronDownIcon, ArrowRightIcon, SpinnerIcon, RetryIcon, ShareIcon, XIcon, GlobeIcon, MenuIcon, InfoIcon, ResetIcon, CopyIcon, ImageIcon, DownloadIcon, CloudUploadIcon, TextToImageIcon } from './components/icons';
 
 const fileToImageFile = (file: File): Promise<ImageFile> => {
   return new Promise((resolve, reject) => {
@@ -76,8 +77,44 @@ const cropImage = (imageUrl: string, targetRatioString: string): Promise<string>
     });
 };
 
+interface PolicyPageProps {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}
+
+const PolicyPage: React.FC<PolicyPageProps> = ({ title, onClose, children }) => {
+  const handleContentClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div 
+        className="bg-[#1C1C1E] rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col relative border border-zinc-700 shadow-2xl"
+        onClick={handleContentClick}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="policy-title"
+      >
+        <header className="flex items-center justify-between p-5 border-b border-zinc-700 flex-shrink-0">
+          <h2 id="policy-title" className="text-xl font-bold text-white">{title}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors" aria-label="Close">
+            <XIcon className="w-6 h-6" />
+          </button>
+        </header>
+        <div className="p-6 overflow-y-auto text-gray-300 space-y-4 leading-relaxed">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 const App: React.FC = () => {
+  type Mode = 'image-to-image' | 'text-to-image';
+  const [mode, setMode] = useState<Mode>('image-to-image');
   const [originalImage, setOriginalImage] = useState<ImageFile | null>(null);
   const [editedImage, setEditedImage] = useState<string | null>(null);
   const [prompt, setPrompt] = useState<string>('');
@@ -89,6 +126,8 @@ const App: React.FC = () => {
   const [currentLang, setCurrentLang] = useState('English');
   const [autoRatio, setAutoRatio] = useState(true);
   const [aspectRatio, setAspectRatio] = useState('1:1');
+  const [activePolicy, setActivePolicy] = useState<string | null>(null);
+
 
   // Content previously from content.json
 const content = {
@@ -228,6 +267,59 @@ const content = {
   }
 };
 
+// Fix: Replaced `JSX.Element` with `React.ReactNode` to resolve the "Cannot find namespace 'JSX'" error.
+// `React.ReactNode` is a more robust type for React children and is explicitly available from the `React` import.
+const policies: { [key: string]: { title: string; content: React.ReactNode } } = {
+    privacy: {
+        title: "Privacy Policy",
+        content: (
+            <>
+                <h3 className="text-lg font-semibold text-white mb-2">1. Introduction</h3>
+                <p>Welcome to Nano Banana. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our AI Image Editor. Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the application.</p>
+                
+                <h3 className="text-lg font-semibold text-white mt-4 mb-2">2. Collection of Your Information</h3>
+                <p>We may collect information about you in a variety of ways. The information we may collect via the Application includes personal data, such as your name, shipping address, email address, and telephone number, and demographic information, such as your age, gender, hometown, and interests, that you voluntarily give to us when choosing to participate in various activities related to the Application, such as chat, posting messages in comment sections or our forums, liking posts, sending feedback, and responding to surveys. You are under no obligation to provide us with personal information of any kind, however your refusal to do so may prevent you from using certain features of the Application.</p>
+                
+                <h3 className="text-lg font-semibold text-white mt-4 mb-2">3. Use of Your Information</h3>
+                <p>Having accurate information about you permits us to provide you with a smooth, efficient, and customized experience. Specifically, we may use information collected about you via the Application to create and manage your account, process your transactions, and deliver targeted advertising, coupons, newsletters, and other information regarding promotions and the Application to you.</p>
+
+                 <h3 className="text-lg font-semibold text-white mt-4 mb-2">4. Contact Us</h3>
+                <p>If you have questions or comments about this Privacy Policy, please contact us at: support@nanobanana.com.</p>
+            </>
+        )
+    },
+    terms: {
+        title: "Terms of Service",
+        content: (
+            <>
+                <h3 className="text-lg font-semibold text-white mb-2">1. Agreement to Terms</h3>
+                <p>By using our AI Image Editor, you agree to be bound by these Terms of Service. If you do not agree to these Terms, do not use the service. We may modify the Terms at any time, in our sole discretion. If we do so, we’ll let you know either by posting the modified Terms on the site or through other communications.</p>
+                
+                <h3 className="text-lg font-semibold text-white mt-4 mb-2">2. Use of the Service</h3>
+                <p>You may use the Service only if you are 13 years or older and are not barred from using the Services under applicable law. You agree not to use the Services for any fraudulent, unlawful, or abusive purpose, or in any way that interferes with the proper functioning of the Services.</p>
+                
+                <h3 className="text-lg font-semibold text-white mt-4 mb-2">3. User Content</h3>
+                <p>For purposes of these Terms, "Content" means text, graphics, images, music, software, audio, video, works of authorship of any kind, and information or other materials that are posted, generated, provided or otherwise made available through the Services. You are responsible for the Content that you post to the Service, including its legality, reliability, and appropriateness. By posting Content to the Service, you grant us the right and license to use, modify, publicly perform, publicly display, reproduce, and distribute such Content on and through the Service.</p>
+            </>
+        )
+    },
+    refund: {
+        title: "Refund Policy",
+        content: (
+            <>
+                <h3 className="text-lg font-semibold text-white mb-2">1. General Policy</h3>
+                <p>Thank you for using Nano Banana. We offer a 14-day refund policy for credit purchases. If you are not satisfied with your purchase, you can request a refund within 14 days of the transaction date.</p>
+                
+                <h3 className="text-lg font-semibold text-white mt-4 mb-2">2. Eligibility for a Refund</h3>
+                <p>To be eligible for a refund, you must have a valid reason for your dissatisfaction. Reasons may include technical issues with the service that prevent you from using your credits, or if the service did not perform as described. We reserve the right to decline a refund request if we find evidence of fraud, abuse, or other manipulative behavior.</p>
+                
+                <h3 className="text-lg font-semibold text-white mt-4 mb-2">3. How to Request a Refund</h3>
+                <p>To request a refund, please contact our support team at support@nanobanana.com with your transaction details and a brief explanation of your reason for the request. Our team will review your request and process it within 5-7 business days.</p>
+            </>
+        )
+    },
+};
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const langMenuRef = useRef<HTMLDivElement>(null);
 
@@ -278,19 +370,32 @@ const content = {
   };
 
   const handleSubmit = async () => {
-    if (!originalImage || !prompt) {
-      setError('Please upload an image and provide an editing instruction.');
+    if (!prompt) {
+      setError('Please provide an editing instruction.');
       return;
     }
+    if (mode === 'image-to-image' && !originalImage) {
+      setError('Please upload an image for Image to Image mode.');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setEditedImage(null);
+
     try {
-      const newImageFromApi = await editImage(
-          originalImage.base64, 
-          originalImage.mimeType, 
+      let newImageFromApi: string;
+
+      if (mode === 'image-to-image') {
+        newImageFromApi = await editImage(
+          originalImage!.base64,
+          originalImage!.mimeType,
           prompt
-      );
+        );
+      } else {
+        newImageFromApi = await generateImageFromText(prompt);
+      }
+
       if (!autoRatio) {
           const croppedImage = await cropImage(newImageFromApi, aspectRatio);
           setEditedImage(croppedImage);
@@ -406,6 +511,24 @@ const content = {
         {/* Editor Section */}
         <section id="editor" className="p-px bg-gradient-to-b from-zinc-700 via-[#1C1C1E] to-[#1C1C1E] rounded-3xl mb-32">
           <div className="bg-[#121212] rounded-[23px] p-6 md:p-10">
+            <div className="flex justify-center mb-8">
+                <div className="bg-[#3a3a3c] rounded-full p-1 flex items-center w-full max-w-md">
+                    <button
+                        onClick={() => setMode('image-to-image')}
+                        className={`w-1/2 py-2.5 text-sm font-semibold rounded-full transition-colors duration-300 flex items-center justify-center gap-2 ${mode === 'image-to-image' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:bg-zinc-700'}`}
+                    >
+                        <ImageIcon className="w-5 h-5" />
+                        Image to Image
+                    </button>
+                    <button
+                        onClick={() => setMode('text-to-image')}
+                        className={`w-1/2 py-2.5 text-sm font-semibold rounded-full transition-colors duration-300 flex items-center justify-center gap-2 ${mode === 'text-to-image' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:bg-zinc-700'}`}
+                    >
+                        <TextToImageIcon className="w-5 h-5" />
+                        Text to Image
+                    </button>
+                </div>
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div className="lg:col-span-4 space-y-6 flex flex-col">
                     <div className="relative">
@@ -467,23 +590,25 @@ const content = {
                             </select>
                         </div>
                     </div>
-                    <div>
-                        <label className="text-sm font-medium text-gray-300">Images</label>
-                        <div onClick={handleFileSelect} className="mt-2 w-full h-36 border-2 border-dashed border-zinc-600 rounded-xl flex items-center justify-center text-center hover:border-zinc-400 cursor-pointer transition-colors bg-black/20">
-                            {originalImage ? (
-                                <img src={originalImage.dataUrl} alt="uploaded preview" className="max-h-full max-w-full object-contain p-2" />
-                            ) : (
-                                <p className="text-zinc-400 text-sm">Click / Drag & Drop to Upload</p>
-                            )}
-                            <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} accept="image/png, image/jpeg, image/webp, image/heic" />
+                    {mode === 'image-to-image' && (
+                        <div>
+                            <label className="text-sm font-medium text-gray-300">Images</label>
+                            <div onClick={handleFileSelect} className="mt-2 w-full h-36 border-2 border-dashed border-zinc-600 rounded-xl flex items-center justify-center text-center hover:border-zinc-400 cursor-pointer transition-colors bg-black/20">
+                                {originalImage ? (
+                                    <img src={originalImage.dataUrl} alt="uploaded preview" className="max-h-full max-w-full object-contain p-2" />
+                                ) : (
+                                    <p className="text-zinc-400 text-sm">Click / Drag & Drop to Upload</p>
+                                )}
+                                <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} accept="image/png, image/jpeg, image/webp, image/heic" />
+                            </div>
                         </div>
-                    </div>
+                    )}
                     
                     <div className="border-t border-zinc-700 !mt-auto pt-6">
                       <div className="space-y-4">
                           <button
                               onClick={handleSubmit}
-                              disabled={isLoading || !originalImage || !prompt}
+                              disabled={isLoading || !prompt || (mode === 'image-to-image' && !originalImage)}
                               className="w-full py-3 text-center font-semibold text-black bg-gradient-to-r from-pink-500 to-yellow-400 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity flex items-center justify-center text-base"
                           >
                               {isLoading ? (
@@ -606,8 +731,19 @@ const content = {
       </main>
 
       <footer className="text-center py-12 mt-24 border-t border-zinc-800">
+        <div className="flex justify-center items-center flex-wrap gap-x-6 gap-y-2 mb-4">
+            <button onClick={() => setActivePolicy('privacy')} className="text-gray-400 hover:text-white text-sm transition-colors">Privacy Policy</button>
+            <button onClick={() => setActivePolicy('terms')} className="text-gray-400 hover:text-white text-sm transition-colors">Terms of Service</button>
+            <button onClick={() => setActivePolicy('refund')} className="text-gray-400 hover:text-white text-sm transition-colors">Refund Policy</button>
+        </div>
         <p className="text-gray-500">© {new Date().getFullYear()} Nano Banana. All rights reserved.</p>
       </footer>
+      
+      {activePolicy && policies[activePolicy] && (
+          <PolicyPage title={policies[activePolicy].title} onClose={() => setActivePolicy(null)}>
+              {policies[activePolicy].content}
+          </PolicyPage>
+      )}
     </div>
   );
 };
