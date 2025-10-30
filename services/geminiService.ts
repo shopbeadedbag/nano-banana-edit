@@ -3,8 +3,7 @@ import { GoogleGenAI, Modality, Part } from "@google/genai";
 export const editImage = async (
   base64ImageData: string,
   mimeType: string,
-  prompt: string,
-  referenceImage?: { base64: string, mimeType: string }
+  prompt: string
 ): Promise<string> => {
   // Fix: Instantiated GoogleGenAI client inside the function to ensure the API key
   // from process.env is available at the time of the API call. This can prevent
@@ -22,15 +21,6 @@ export const editImage = async (
         },
       }
     ];
-
-    if (referenceImage) {
-      parts.push({
-        inlineData: {
-          data: referenceImage.base64,
-          mimeType: referenceImage.mimeType,
-        },
-      });
-    }
 
     parts.push({ text: prompt });
 

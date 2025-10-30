@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { ImageFile } from './types';
 import { editImage } from './services/geminiService';
-import { LogoIcon, StarIcon, ChevronDownIcon, ArrowRightIcon, SpinnerIcon, RetryIcon, ShareIcon, XIcon, GlobeIcon, MenuIcon, InfoIcon, ResetIcon, CopyIcon, ImageIcon, DownloadIcon, ReferenceUploadIcon, CloudUploadIcon } from './components/icons';
+import { LogoIcon, StarIcon, ChevronDownIcon, ArrowRightIcon, SpinnerIcon, RetryIcon, ShareIcon, XIcon, GlobeIcon, MenuIcon, InfoIcon, ResetIcon, CopyIcon, ImageIcon, DownloadIcon, CloudUploadIcon } from './components/icons';
 
 const fileToImageFile = (file: File): Promise<ImageFile> => {
   return new Promise((resolve, reject) => {
@@ -79,7 +79,6 @@ const cropImage = (imageUrl: string, targetRatioString: string): Promise<string>
 
 const App: React.FC = () => {
   const [originalImage, setOriginalImage] = useState<ImageFile | null>(null);
-  const [referenceImage, setReferenceImage] = useState<ImageFile | null>(null);
   const [editedImage, setEditedImage] = useState<string | null>(null);
   const [prompt, setPrompt] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -87,7 +86,6 @@ const App: React.FC = () => {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
-  const [isReferenceOpen, setReferenceOpen] = useState(true);
   const [currentLang, setCurrentLang] = useState('English');
   const [autoRatio, setAutoRatio] = useState(true);
   const [aspectRatio, setAspectRatio] = useState('1:1');
@@ -138,7 +136,6 @@ const App: React.FC = () => {
   };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const referenceFileInputRef = useRef<HTMLInputElement>(null);
   const langMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -156,10 +153,6 @@ const App: React.FC = () => {
 
   const handleFileSelect = () => {
     fileInputRef.current?.click();
-  };
-  
-  const handleReferenceFileSelect = () => {
-    referenceFileInputRef.current?.click();
   };
 
   const handleCopyPrompt = () => {
@@ -191,19 +184,6 @@ const App: React.FC = () => {
     }
   };
 
-  const handleReferenceFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      try {
-        const imageFile = await fileToImageFile(file);
-        setReferenceImage(imageFile);
-      } catch (err) {
-        setError('Failed to load reference image. Please try another file.');
-        console.error(err);
-      }
-    }
-  };
-
   const handleSubmit = async () => {
     if (!originalImage || !prompt) {
       setError('Please upload an image and provide an editing instruction.');
@@ -216,8 +196,7 @@ const App: React.FC = () => {
       const newImageFromApi = await editImage(
           originalImage.base64, 
           originalImage.mimeType, 
-          prompt,
-          referenceImage ? { base64: referenceImage.base64, mimeType: referenceImage.mimeType } : undefined
+          prompt
       );
       if (!autoRatio) {
           const croppedImage = await cropImage(newImageFromApi, aspectRatio);
@@ -406,39 +385,7 @@ const App: React.FC = () => {
                             <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} accept="image/png, image/jpeg, image/webp, image/heic" />
                         </div>
                     </div>
-                    <div className="bg-[#1c1c1c] border border-zinc-700 rounded-xl">
-                        <button onClick={() => setReferenceOpen(!isReferenceOpen)} className="w-full flex justify-between items-center p-4">
-                            <div className="flex items-center">
-                                <span className="text-sm font-medium text-gray-300">Reference Image</span>
-                            </div>
-                            <div className='flex items-center gap-2'>
-                                <InfoIcon className="w-4 h-4 text-zinc-400" />
-                                <ChevronDownIcon className={`w-5 h-5 text-zinc-400 transition-transform ${isReferenceOpen ? '' : 'rotate-180'}`} />
-                            </div>
-                        </button>
-                        {isReferenceOpen && (
-                            <div className="px-4 pb-4 flex items-center gap-4">
-                                <div onClick={handleReferenceFileSelect} className="relative w-24 h-24 border-2 border-dashed border-zinc-600 rounded-lg flex items-center justify-center text-center hover:border-zinc-500 cursor-pointer transition-colors bg-black/20 p-1 shrink-0">
-                                    {referenceImage ? (
-                                        <>
-                                            <img src={referenceImage.dataUrl} alt="reference preview" className="max-h-full max-w-full object-contain rounded" />
-                                            <button onClick={(e) => { e.stopPropagation(); if (referenceFileInputRef.current) referenceFileInputRef.current.value = ''; setReferenceImage(null); }} className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 text-white hover:bg-black/90 transition-colors">
-                                                <XIcon className="w-3 h-3"/>
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <ReferenceUploadIcon className="w-10 h-10 text-zinc-500"/>
-                                    )}
-                                    <input ref={referenceFileInputRef} type="file" className="hidden" onChange={handleReferenceFileChange} accept="image/png, image/jpeg, image/webp, image/heic" />
-                                </div>
-                                <button onClick={handleReferenceFileSelect} className="h-24 px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700 transition-colors flex-1 text-sm font-semibold flex items-center justify-center gap-2">
-                                    <CloudUploadIcon className="w-6 h-6" />
-                                    <span>Upload Image</span>
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
+                    
                     <div className="border-t border-zinc-700 !mt-auto pt-6">
                       <div className="space-y-4">
                           <button
@@ -451,7 +398,6 @@ const App: React.FC = () => {
                               ) : (
                                   <>
                                       Generate Now
-                                      <span className="ml-2 inline-flex items-center justify-center w-7 h-7 rounded-full bg-yellow-300/50 text-xs font-bold ring-1 ring-inset ring-black/20">40</span>
                                   </>
                               )}
                           </button>
