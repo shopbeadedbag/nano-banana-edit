@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { ImageFile } from './types';
 import { editImage, generateImageFromText } from './services/geminiService';
@@ -115,9 +114,17 @@ const PolicyPage: React.FC<PolicyPageProps> = ({ title, onClose, children }) => 
 const App: React.FC = () => {
   type Mode = 'image-to-image' | 'text-to-image';
   const [mode, setMode] = useState<Mode>('image-to-image');
+  
+  // State for Image-to-Image mode
   const [originalImage, setOriginalImage] = useState<ImageFile | null>(null);
-  const [editedImage, setEditedImage] = useState<string | null>(null);
-  const [prompt, setPrompt] = useState<string>('');
+  const [i2iPrompt, setI2iPrompt] = useState<string>('');
+  const [i2iResult, setI2iResult] = useState<string | null>(null);
+
+  // State for Text-to-Image mode
+  const [t2iPrompt, setT2iPrompt] = useState<string>('');
+  const [t2iResult, setT2iResult] = useState<string | null>(null);
+
+  // Shared state
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
@@ -128,6 +135,10 @@ const App: React.FC = () => {
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [activePolicy, setActivePolicy] = useState<string | null>(null);
 
+  // Derived state based on current mode
+  const currentPrompt = mode === 'image-to-image' ? i2iPrompt : t2iPrompt;
+  const setCurrentPrompt = mode === 'image-to-image' ? setI2iPrompt : setT2iPrompt;
+  const currentResult = mode === 'image-to-image' ? i2iResult : t2iResult;
 
   // Content previously from content.json
 const content = {
@@ -267,8 +278,6 @@ const content = {
   }
 };
 
-// Fix: Replaced `JSX.Element` with `React.ReactNode` to resolve the "Cannot find namespace 'JSX'" error.
-// `React.ReactNode` is a more robust type for React children and is explicitly available from the `React` import.
 const policies: { [key: string]: { title: string; content: React.ReactNode } } = {
     privacy: {
         title: "Privacy Policy",
@@ -341,14 +350,14 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
   };
 
   const handleCopyPrompt = () => {
-    navigator.clipboard.writeText(prompt);
+    navigator.clipboard.writeText(currentPrompt);
   };
   
   const handleDownload = () => {
-    if (!editedImage) return;
+    if (!currentResult) return;
     const link = document.createElement('a');
-    link.href = editedImage;
-    link.download = 'edited-by-nano-banana.png';
+    link.href = currentResult;
+    link.download = 'generated-by-nano-banana.png';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -358,7 +367,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
     const file = event.target.files?.[0];
     if (file) {
       setError(null);
-      setEditedImage(null);
+      setI2iResult(null);
       try {
         const imageFile = await fileToImageFile(file);
         setOriginalImage(imageFile);
@@ -370,8 +379,8 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
   };
 
   const handleSubmit = async () => {
-    if (!prompt) {
-      setError('Please provide an editing instruction.');
+    if (!currentPrompt) {
+      setError('Please provide a prompt.');
       return;
     }
     if (mode === 'image-to-image' && !originalImage) {
@@ -381,7 +390,11 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
 
     setIsLoading(true);
     setError(null);
-    setEditedImage(null);
+    if (mode === 'image-to-image') {
+        setI2iResult(null);
+    } else {
+        setT2iResult(null);
+    }
 
     try {
       let newImageFromApi: string;
@@ -390,17 +403,18 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
         newImageFromApi = await editImage(
           originalImage!.base64,
           originalImage!.mimeType,
-          prompt
+          i2iPrompt
         );
       } else {
-        newImageFromApi = await generateImageFromText(prompt);
+        newImageFromApi = await generateImageFromText(t2iPrompt);
       }
 
-      if (!autoRatio) {
-          const croppedImage = await cropImage(newImageFromApi, aspectRatio);
-          setEditedImage(croppedImage);
+      const finalImage = autoRatio ? newImageFromApi : await cropImage(newImageFromApi, aspectRatio);
+      
+      if (mode === 'image-to-image') {
+        setI2iResult(finalImage);
       } else {
-          setEditedImage(newImageFromApi);
+        setT2iResult(finalImage);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred.');
@@ -417,11 +431,19 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
       { href: '#faq', label: 'FAQ' },
   ];
   
-  const suggestedPrompts = [
+  const i2iSuggestedPrompts = [
       'Change the background to a futuristic cityscape',
       'Add a pirate hat',
       'Make it look like an oil painting',
   ];
+
+  const t2iSuggestedPrompts = [
+      'A cat astronaut floating in space',
+      'A mystical forest with glowing plants',
+      'A steampunk city with airships',
+  ];
+
+  const suggestedPrompts = mode === 'image-to-image' ? i2iSuggestedPrompts : t2iSuggestedPrompts;
 
   const toggleFaq = (index: number) => {
     setActiveFaq(activeFaq === index ? null : index);
@@ -533,10 +555,10 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                 <div className="lg:col-span-4 space-y-6 flex flex-col">
                     <div className="relative">
                         <textarea
-                            value={prompt}
+                            value={currentPrompt}
                             onChange={(e) => {
                                 if (e.target.value.length <= 2000) {
-                                    setPrompt(e.target.value)
+                                    setCurrentPrompt(e.target.value)
                                 }
                             }}
                             placeholder="Input prompt here"
@@ -544,9 +566,9 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                             maxLength={2000}
                         />
                         <div className="absolute bottom-3 right-3 flex items-center space-x-2 text-xs text-zinc-400">
-                            <span>{prompt.length}/2000</span>
+                            <span>{currentPrompt.length}/2000</span>
                             <button onClick={handleCopyPrompt} className="hover:text-white transition-colors" aria-label="Copy prompt"><CopyIcon className="w-4 h-4" /></button>
-                            <button onClick={() => setPrompt('')} className="hover:text-white transition-colors" aria-label="Clear prompt"><XIcon className="w-4 h-4" /></button>
+                            <button onClick={() => setCurrentPrompt('')} className="hover:text-white transition-colors" aria-label="Clear prompt"><XIcon className="w-4 h-4" /></button>
                         </div>
                     </div>
                     <div>
@@ -555,7 +577,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                             {suggestedPrompts.map((p) => (
                                 <button
                                     key={p}
-                                    onClick={() => setPrompt(p)}
+                                    onClick={() => setCurrentPrompt(p)}
                                     className="px-3 py-1.5 bg-zinc-800 text-zinc-300 rounded-full text-sm hover:bg-zinc-700 transition-colors"
                                 >
                                     {p}
@@ -608,7 +630,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                       <div className="space-y-4">
                           <button
                               onClick={handleSubmit}
-                              disabled={isLoading || !prompt || (mode === 'image-to-image' && !originalImage)}
+                              disabled={isLoading || !currentPrompt || (mode === 'image-to-image' && !originalImage)}
                               className="w-full py-3 text-center font-semibold text-black bg-gradient-to-r from-pink-500 to-yellow-400 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity flex items-center justify-center text-base"
                           >
                               {isLoading ? (
@@ -621,7 +643,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                           </button>
                           <button
                               onClick={handleDownload}
-                              disabled={!editedImage || isLoading}
+                              disabled={!currentResult || isLoading}
                               className="w-full py-3 text-center font-semibold text-white bg-zinc-800 border border-zinc-700 rounded-lg hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center text-base"
                               aria-label="Download edited image"
                           >
@@ -640,10 +662,10 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                             <p className="mt-4 font-medium">Generating...</p>
                         </div>
                     )}
-                    {!isLoading && editedImage && (
-                        <img src={editedImage} alt="Edited result" className="w-full h-full object-contain rounded-2xl" />
+                    {!isLoading && currentResult && (
+                        <img src={currentResult} alt="Generated result" className="w-full h-full object-contain rounded-2xl" />
                     )}
-                    {!isLoading && !editedImage && (
+                    {!isLoading && !currentResult && (
                         <div className="text-center text-zinc-500 z-10 p-8">
                             <ImageIcon className="w-20 h-20 mx-auto opacity-30" />
                             <p className="mt-6 font-medium">Your generated image will appear here</p>
