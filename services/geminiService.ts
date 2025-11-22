@@ -1,7 +1,13 @@
 import { GoogleGenAI, Modality, Part } from "@google/genai";
 
+const getApiKey = (): string => {
+  // Check for the variable configured in Vercel (GOOGLE_API_KEY) as well as the standard API_KEY
+  return process.env.GOOGLE_API_KEY || process.env.API_KEY || "";
+};
+
 export const generateImageFromText = async (prompt: string): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+  const apiKey = getApiKey();
+  const ai = new GoogleGenAI({ apiKey });
   try {
       const response = await ai.models.generateImages({
           model: 'imagen-4.0-generate-001',
@@ -29,14 +35,13 @@ export const editImage = async (
   mimeType: string,
   prompt: string
 ): Promise<string> => {
-  // Fix: Instantiated GoogleGenAI client inside the function to ensure the API key
-  // from process.env is available at the time of the API call. This can prevent
-  // errors in environments where environment variables are loaded late.
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+  const apiKey = getApiKey();
+  // Instantiated GoogleGenAI client inside the function to ensure the API key
+  // from process.env is available at the time of the API call.
+  const ai = new GoogleGenAI({ apiKey });
 
   try {
-    // Fix: Explicitly type the `parts` array with the `Part` type from `@google/genai`
-    // to allow it to hold both image and text parts, resolving the TypeScript error.
+    // Explicitly type the `parts` array with the `Part` type from `@google/genai`
     const parts: Part[] = [
       {
         inlineData: {
