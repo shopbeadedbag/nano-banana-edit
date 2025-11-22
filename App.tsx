@@ -559,6 +559,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                             onChange={(e) => {
                                 if (e.target.value.length <= 2000) {
                                     setCurrentPrompt(e.target.value)
+                                    if (error) setError(null); // Clear error when typing
                                 }
                             }}
                             placeholder="Input prompt here"
@@ -577,7 +578,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                             {suggestedPrompts.map((p) => (
                                 <button
                                     key={p}
-                                    onClick={() => setCurrentPrompt(p)}
+                                    onClick={() => { setCurrentPrompt(p); if(error) setError(null); }}
                                     className="px-3 py-1.5 bg-zinc-800 text-zinc-300 rounded-full text-sm hover:bg-zinc-700 transition-colors"
                                 >
                                     {p}
@@ -651,7 +652,15 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                               <span>Download</span>
                           </button>
                       </div>
-                      {error && <p className="text-red-500 text-sm text-center mt-4">{error}</p>}
+                      {error && (
+                        <div className="mt-4 p-4 bg-red-500/10 border border-red-500/50 rounded-xl flex items-start gap-3 text-red-200 text-sm text-left animate-fade-in">
+                            <InfoIcon className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" />
+                            <div>
+                                <p className="font-medium text-red-400 mb-1">Generation Failed</p>
+                                <p>{error}</p>
+                            </div>
+                        </div>
+                      )}
                     </div>
                 </div>
                 

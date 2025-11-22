@@ -22,6 +22,57 @@ const getApiKey = (): string => {
   return "";
 };
 
+// Helper to parse and clean Gemini API errors
+const handleGeminiError = (error: any): never => {
+  console.error("Gemini API Error Details:", error);
+  
+  let errorMessage = error.message || error.toString();
+
+  // 1. Check for Rate Limiting / Quota (429)
+  if (
+      errorMessage.includes('429') || 
+      errorMessage.includes('RESOURCE_EXHAUSTED') || 
+      errorMessage.includes('Quota exceeded')
+  ) {
+    throw new Error("⚠️ High Traffic / Quota Exceeded. The free tier limit for this model has been reached. Please wait a minute and try again.");
+  }
+
+  // 2. Check for Safety Blocks
+  if (errorMessage.includes('SAFETY') || errorMessage.includes('blocked')) {
+    throw new Error("🛡️ Content Blocked. The request was flagged by safety filters. Please try a different prompt.");
+  }
+
+  // 3. Try to parse if it's a raw JSON string (common with some API responses)
+  if (typeof errorMessage === 'string' && (errorMessage.trim().startsWith('{') || errorMessage.includes('{"error":'))) {
+      try {
+          // Attempt to find and parse the JSON object within the error string
+          const jsonMatch = errorMessage.match(/\{[\s\S]*\}/);
+          const jsonStr = jsonMatch ? jsonMatch[0] : errorMessage;
+          const parsed = JSON.parse(jsonStr);
+          
+          if (parsed.error) {
+              if (parsed.error.code === 429) {
+                   throw new Error("⚠️ High Traffic. Please try again later.");
+              }
+              if (parsed.error.message) {
+                  // Clean up common technical prefixes
+                  return handleGeminiError({ message: parsed.error.message }); // Recursively check the inner message
+              }
+          }
+      } catch (e) {
+          // Parsing failed, fall through to default cleanup
+      }
+  }
+
+  // 4. General cleanup for other errors
+  // Truncate extremely long error messages
+  if (errorMessage.length > 150) {
+      errorMessage = errorMessage.substring(0, 150) + "...";
+  }
+
+  throw new Error(`API Error: ${errorMessage}`);
+};
+
 export const generateImageFromText = async (prompt: string): Promise<string> => {
   const apiKey = getApiKey();
   if (!apiKey) {
@@ -30,13 +81,11 @@ export const generateImageFromText = async (prompt: string): Promise<string> => 
 
   const ai = new GoogleGenAI({ apiKey });
   try {
-      // Switched to gemini-2.5-flash-image for broader availability compared to Imagen
       const response = await ai.models.generateContent({
           model: 'gemini-2.5-flash-image',
           contents: {
             parts: [{ text: prompt }]
           },
-          // No explicit image config needed for standard 1:1 generation
       });
 
       // Iterate through parts to find the image
@@ -50,14 +99,14 @@ export const generateImageFromText = async (prompt: string): Promise<string> => 
       // Check for safety refusal or text-only response
       const textPart = response.candidates?.[0]?.content?.parts?.find(p => p.text);
       if (textPart && textPart.text) {
-          throw new Error(`Model response: ${textPart.text}`);
+          // If the model returns text instead of an image, it might be a refusal
+          throw new Error(textPart.text); 
       }
 
       throw new Error("No image was generated in the response.");
   } catch (error: any) {
-      console.error("Error generating image with Gemini:", error);
-      // Pass the actual error message to the UI
-      throw new Error(error.message || "Failed to generate image.");
+      handleGeminiError(error);
+      return ""; // unreachable due to throw
   }
 };
 
@@ -99,15 +148,14 @@ export const editImage = async (
       }
     }
     
-    // Check if the model returned text (e.g. safety refusal)
     const textPart = response.candidates?.[0]?.content?.parts?.find(p => p.text);
     if (textPart && textPart.text) {
-        throw new Error(`Model response: ${textPart.text}`);
+        throw new Error(textPart.text);
     }
 
     throw new Error("No image was generated in the response.");
   } catch (error: any) {
-    console.error("Error editing image with Gemini:", error);
-    throw new Error(error.message || "Failed to edit image.");
+    handleGeminiError(error);
+    return ""; // unreachable
   }
 };
