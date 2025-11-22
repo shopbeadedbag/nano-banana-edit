@@ -3,6 +3,58 @@ import { ImageFile } from './types';
 import { editImage, generateImageFromText } from './services/geminiService';
 import { LogoIcon, StarIcon, ChevronDownIcon, ArrowRightIcon, SpinnerIcon, RetryIcon, ShareIcon, XIcon, GlobeIcon, MenuIcon, InfoIcon, ResetIcon, CopyIcon, ImageIcon, DownloadIcon, CloudUploadIcon, TextToImageIcon } from './components/icons';
 
+// --- SEO Helper Component ---
+const SeoHead: React.FC<{ title: string; description: string; lang: string }> = ({ title, description, lang }) => {
+  useEffect(() => {
+    // Update Title
+    document.title = title;
+
+    // Update Meta Description
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+        metaDesc.setAttribute('content', description);
+    } else {
+        const newMeta = document.createElement('meta');
+        newMeta.name = 'description';
+        newMeta.content = description;
+        document.head.appendChild(newMeta);
+    }
+    
+    // Update Open Graph Tags
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', title);
+    
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute('content', description);
+
+    // Map display language to ISO code for html tag
+    const langMap: Record<string, string> = {
+        'English': 'en',
+        '简体中文': 'zh-CN',
+        'Español': 'es'
+    };
+    document.documentElement.lang = langMap[lang] || 'en';
+    
+    // Update JSON-LD Schema
+    const schemaScript = document.querySelector('script[type="application/ld+json"]');
+    if (schemaScript) {
+         const schema = JSON.parse(schemaScript.textContent || '{}');
+         // Update description in schema if it exists in the array
+         if (Array.isArray(schema['@graph'])) {
+             const appSchema = schema['@graph'].find((item: any) => item['@type'] === 'SoftwareApplication');
+             if (appSchema) {
+                 appSchema.description = description;
+                 appSchema.inLanguage = langMap[lang] || 'en';
+                 schemaScript.textContent = JSON.stringify(schema);
+             }
+         }
+    }
+
+  }, [title, description, lang]);
+
+  return null;
+};
+
 const fileToImageFile = (file: File): Promise<ImageFile> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -68,7 +120,6 @@ const cropImage = (imageUrl: string, targetRatioString: string): Promise<string>
                 cropHeight
             );
 
-            // You can change the output format here if needed, e.g., 'image/jpeg'
             resolve(canvas.toDataURL('image/png'));
         };
         img.onerror = (error) => reject(error);
@@ -110,6 +161,20 @@ const PolicyPage: React.FC<PolicyPageProps> = ({ title, onClose, children }) => 
   );
 };
 
+const seoData: Record<string, { title: string; description: string }> = {
+  'English': {
+    title: 'Nano Banana - AI Image Editor | Edit Photos with Text Prompts',
+    description: 'Edit photos instantly with Nano Banana, the free AI image editor powered by Gemini 2.5 Flash. Describe changes with text to transform images, create art, and edit professionally without design skills.'
+  },
+  '简体中文': {
+    title: 'Nano Banana - AI 图片编辑器 | 通过文字指令编辑照片',
+    description: '使用 Nano Banana 即时编辑照片，这是一款由 Gemini 2.5 Flash 驱动的免费 AI 图片编辑器。只需描述您想要的更改，即可转换图像、创作艺术作品。'
+  },
+  'Español': {
+    title: 'Nano Banana - Editor de Imágenes IA | Edita Fotos con Texto',
+    description: 'Edita fotos al instante con Nano Banana, el editor de imágenes gratuito con IA impulsado por Gemini 2.5 Flash. Describe los cambios con texto para transformar imágenes y crear arte.'
+  }
+};
 
 const App: React.FC = () => {
   type Mode = 'image-to-image' | 'text-to-image';
@@ -139,6 +204,9 @@ const App: React.FC = () => {
   const currentPrompt = mode === 'image-to-image' ? i2iPrompt : t2iPrompt;
   const setCurrentPrompt = mode === 'image-to-image' ? setI2iPrompt : setT2iPrompt;
   const currentResult = mode === 'image-to-image' ? i2iResult : t2iResult;
+
+  // Get current SEO data
+  const currentSeo = seoData[currentLang] || seoData['English'];
 
   // Content previously from content.json
 const content = {
@@ -464,6 +532,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
 
   return (
     <div className="bg-[#1C1C1E] text-gray-300 antialiased">
+       <SeoHead title={currentSeo.title} description={currentSeo.description} lang={currentLang} />
        <header className="sticky top-0 z-50 backdrop-blur-sm bg-[#1C1C1E]/80 border-b border-zinc-800">
             <nav className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
                 <a href="#" className="flex items-center space-x-2">
@@ -481,7 +550,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
 
                 <div className="flex items-center space-x-4">
                     <div className="relative" ref={langMenuRef}>
-                        <button onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} className="flex items-center space-x-1 text-gray-300 hover:text-white transition-colors">
+                        <button onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} className="flex items-center space-x-1 text-gray-300 hover:text-white transition-colors" aria-label="Select Language">
                             <GlobeIcon className="w-5 h-5" />
                             <span className="hidden sm:inline text-sm">{currentLang}</span>
                             <ChevronDownIcon className={`w-4 h-4 transition-transform ${isLangMenuOpen ? 'rotate-180' : ''}`} />
@@ -496,7 +565,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                     </div>
 
                     <div className="md:hidden">
-                        <button onClick={() => setIsMobileMenuOpen(true)}>
+                        <button onClick={() => setIsMobileMenuOpen(true)} aria-label="Open Menu">
                             <MenuIcon className="w-6 h-6" />
                         </button>
                     </div>
@@ -507,7 +576,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
         {isMobileMenuOpen && (
             <div className="fixed inset-0 z-50 bg-[#1C1C1E]/90 backdrop-blur-sm md:hidden">
                 <div className="flex justify-end p-4">
-                    <button onClick={() => setIsMobileMenuOpen(false)}>
+                    <button onClick={() => setIsMobileMenuOpen(false)} aria-label="Close Menu">
                         <XIcon className="w-8 h-8" />
                     </button>
                 </div>
@@ -538,6 +607,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                     <button
                         onClick={() => setMode('image-to-image')}
                         className={`w-1/2 py-2.5 text-sm font-semibold rounded-full transition-colors duration-300 flex items-center justify-center gap-2 ${mode === 'image-to-image' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:bg-zinc-700'}`}
+                        aria-pressed={mode === 'image-to-image'}
                     >
                         <ImageIcon className="w-5 h-5" />
                         Image to Image
@@ -545,6 +615,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                     <button
                         onClick={() => setMode('text-to-image')}
                         className={`w-1/2 py-2.5 text-sm font-semibold rounded-full transition-colors duration-300 flex items-center justify-center gap-2 ${mode === 'text-to-image' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:bg-zinc-700'}`}
+                        aria-pressed={mode === 'text-to-image'}
                     >
                         <TextToImageIcon className="w-5 h-5" />
                         Text to Image
@@ -565,6 +636,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                             placeholder="Input prompt here"
                             className="w-full bg-[#1c1c1c] border border-zinc-700 rounded-xl p-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition resize-none h-36"
                             maxLength={2000}
+                            aria-label="Prompt input"
                         />
                         <div className="absolute bottom-3 right-3 flex items-center space-x-2 text-xs text-zinc-400">
                             <span>{currentPrompt.length}/2000</span>
@@ -587,7 +659,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                         </div>
                     </div>
                     <div>
-                        <label className="text-sm font-medium text-gray-300">Ratio</label>
+                        <label className="text-sm font-medium text-gray-300" id="ratio-label">Ratio</label>
                         <div className="mt-2 space-y-3">
                             <div className="flex items-center justify-between bg-[#1c1c1c] border border-zinc-700 rounded-xl p-4">
                                 <div className="flex items-center">
@@ -595,7 +667,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                                     <InfoIcon className="w-4 h-4 ml-1.5 text-zinc-400" />
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" checked={autoRatio} onChange={() => setAutoRatio(!autoRatio)} className="sr-only peer" />
+                                    <input type="checkbox" checked={autoRatio} onChange={() => setAutoRatio(!autoRatio)} className="sr-only peer" aria-label="Toggle Auto Ratio" />
                                     <div className="w-11 h-6 bg-zinc-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-500"></div>
                                 </label>
                             </div>
@@ -604,7 +676,9 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                                 onChange={(e) => setAspectRatio(e.target.value)}
                                 disabled={autoRatio}
                                 className="w-full bg-[#1c1c1c] border border-zinc-700 rounded-xl p-4 text-sm font-medium focus:ring-2 focus:ring-pink-500 focus:border-pink-500 appearance-none bg-no-repeat bg-right-3 disabled:opacity-50 disabled:cursor-not-allowed" 
-                                style={{backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.25em'}}>
+                                style={{backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.25em'}}
+                                aria-labelledby="ratio-label"
+                            >
                                 <option value="1:1">1:1 Square</option>
                                 <option value="16:9">16:9 Landscape</option>
                                 <option value="9:16">9:16 Portrait</option>
@@ -616,7 +690,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                     {mode === 'image-to-image' && (
                         <div>
                             <label className="text-sm font-medium text-gray-300">Images</label>
-                            <div onClick={handleFileSelect} className="mt-2 w-full h-36 border-2 border-dashed border-zinc-600 rounded-xl flex items-center justify-center text-center hover:border-zinc-400 cursor-pointer transition-colors bg-black/20">
+                            <div onClick={handleFileSelect} className="mt-2 w-full h-36 border-2 border-dashed border-zinc-600 rounded-xl flex items-center justify-center text-center hover:border-zinc-400 cursor-pointer transition-colors bg-black/20" role="button" aria-label="Upload image">
                                 {originalImage ? (
                                     <img src={originalImage.dataUrl} alt="uploaded preview" className="max-h-full max-w-full object-contain p-2" />
                                 ) : (
@@ -653,7 +727,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                           </button>
                       </div>
                       {error && (
-                        <div className="mt-4 p-4 bg-red-500/10 border border-red-500/50 rounded-xl flex items-start gap-3 text-red-200 text-sm text-left animate-fade-in">
+                        <div className="mt-4 p-4 bg-red-500/10 border border-red-500/50 rounded-xl flex items-start gap-3 text-red-200 text-sm text-left animate-fade-in" role="alert">
                             <InfoIcon className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" />
                             <div>
                                 <p className="font-medium text-red-400 mb-1">Generation Failed</p>
@@ -692,18 +766,18 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
               <h2 className="text-4xl font-bold text-white mb-12">{content.howToUse.title}</h2>
               <div className="space-y-8">
                 {content.howToUse.steps.map((step) => (
-                  <div key={step.number} className="flex items-start space-x-4">
+                  <article key={step.number} className="flex items-start space-x-4">
                     <div className="flex-shrink-0 w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold text-lg">{step.number}</div>
                     <div>
                       <h3 className="text-xl font-semibold text-white">{step.title}</h3>
                       <p className="text-gray-400 mt-1">{step.description}</p>
                     </div>
-                  </div>
+                  </article>
                 ))}
               </div>
             </div>
             <div>
-              <img src={content.howToUse.imageUrl} alt="Woman in red dress" className="rounded-2xl w-full h-auto object-cover" />
+              <img src={content.howToUse.imageUrl} alt="Woman in red dress" className="rounded-2xl w-full h-auto object-cover" loading="lazy" />
             </div>
           </div>
         </section>
@@ -711,15 +785,15 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
         {/* Features Section */}
         <section id="features" className="py-20 md:py-32 space-y-28">
           {content.features.map((feature, index) => (
-            <div key={index} className={`grid lg:grid-cols-2 gap-12 lg:gap-20 items-center ${feature.imagePosition === 'right' ? 'lg:[direction:rtl]' : ''}`}>
+            <article key={index} className={`grid lg:grid-cols-2 gap-12 lg:gap-20 items-center ${feature.imagePosition === 'right' ? 'lg:[direction:rtl]' : ''}`}>
               <div className="lg:[direction:ltr]">
                 <h3 className="text-3xl font-bold text-white mb-6">{feature.title}</h3>
                 <p className="text-gray-400 leading-relaxed">{feature.description}</p>
               </div>
               <div>
-                <img src={feature.imageUrl} alt={feature.title} className="rounded-2xl w-full h-auto object-cover" />
+                <img src={feature.imageUrl} alt={feature.title} className="rounded-2xl w-full h-auto object-cover" loading="lazy" />
               </div>
-            </div>
+            </article>
           ))}
         </section>
 
@@ -729,11 +803,11 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
           <p className="text-gray-400 max-w-3xl mx-auto mb-16">{content.transformations.subtitle}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {content.transformations.items.map((item, index) => (
-              <div key={index} className="bg-[#2C2C2E] p-5 rounded-2xl text-left">
-                <img src={item.imageUrl} alt={item.title} className="rounded-lg w-full h-auto object-cover mb-4 aspect-[3/2]" />
+              <article key={index} className="bg-[#2C2C2E] p-5 rounded-2xl text-left">
+                <img src={item.imageUrl} alt={item.title} className="rounded-lg w-full h-auto object-cover mb-4 aspect-[3/2]" loading="lazy" />
                 <h4 className="font-semibold text-white mb-1">{item.title}</h4>
                 <p className="text-sm text-gray-400">{item.description}</p>
-              </div>
+              </article>
             ))}
           </div>
         </section>
@@ -742,16 +816,20 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
         <section id="faq" className="max-w-3xl mx-auto py-20 md:py-32">
           <h2 className="text-4xl font-bold text-white text-center">{content.faq.title}</h2>
           <p className="text-lg text-gray-400 text-center mb-16">{content.faq.subtitle}</p>
-          <div className="space-y-4">
+          <div className="space-y-4" itemScope itemType="https://schema.org/FAQPage">
             {content.faq.questions.map((faq, i) => (
-              <div key={i} className="bg-[#2C2C2E] rounded-xl">
-                <button onClick={() => toggleFaq(i)} className="w-full flex justify-between items-center p-6 text-left">
-                  <span className={`text-lg font-medium ${activeFaq === i ? 'text-white' : 'text-gray-300'}`}>{faq.q}</span>
+              <div key={i} className="bg-[#2C2C2E] rounded-xl" itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
+                <button 
+                    onClick={() => toggleFaq(i)} 
+                    className="w-full flex justify-between items-center p-6 text-left"
+                    aria-expanded={activeFaq === i}
+                >
+                  <span className={`text-lg font-medium ${activeFaq === i ? 'text-white' : 'text-gray-300'}`} itemProp="name">{faq.q}</span>
                   {activeFaq === i ? <FaqMinusIcon /> : <FaqPlusIcon />}
                 </button>
                 {activeFaq === i && (
-                  <div className="px-6 pb-6 text-gray-400 border-t border-zinc-700/50 mt-3 pt-5">
-                    <p className="leading-relaxed">{faq.a}</p>
+                  <div className="px-6 pb-6 text-gray-400 border-t border-zinc-700/50 mt-3 pt-5" itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
+                    <p className="leading-relaxed" itemProp="text">{faq.a}</p>
                   </div>
                 )}
               </div>
