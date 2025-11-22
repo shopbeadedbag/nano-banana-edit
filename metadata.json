@@ -1,5 +1,5 @@
 {
   "name": "Nano Banana AI Image Editor",
-  "description": "An AI-powered image editor that allows you to edit your photos instantly using text prompts. Powered by Gemini 2.5 Flash, you can describe changes and transform your images in seconds without any design skills.",
+  "description": "Edit photos instantly with Nano Banana, the free AI image editor powered by Gemini 2.5 Flash. Describe changes with text to transform images, create art, and edit professionally without design skills.",
   "requestFramePermissions": []
 }

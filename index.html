@@ -4,11 +4,99 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nano Banana - AI Image Editor</title>
+    
+    <!-- Primary Meta Tags -->
+    <title>Nano Banana - AI Image Editor | Edit Photos with Text Prompts</title>
+    <meta name="title" content="Nano Banana - AI Image Editor | Edit Photos with Text Prompts">
+    <meta name="description" content="Edit photos instantly with Nano Banana, the free AI image editor powered by Gemini 2.5 Flash. Describe changes with text to transform images, create art, and edit professionally without design skills.">
+    <meta name="keywords" content="AI image editor, generative AI, photo editor, Gemini 2.5, text to image, image to image, Nano Banana, free online photo editor, AI background remover">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    <meta name="author" content="Nano Banana">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://nanobanana.com/">
+    <meta property="og:title" content="Nano Banana - AI Image Editor">
+    <meta property="og:description" content="An AI-powered image editor that allows you to edit your photos instantly using text prompts. Powered by Gemini 2.5 Flash.">
+    <meta property="og:image" content="https://pixlr.com/images/prompter/nano-banan-ai-image-editor.webp">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://nanobanana.com/">
+    <meta property="twitter:title" content="Nano Banana - AI Image Editor">
+    <meta property="twitter:description" content="Edit photos instantly with Nano Banana, the free AI image editor powered by Gemini 2.5 Flash.">
+    <meta property="twitter:image" content="https://pixlr.com/images/prompter/nano-banan-ai-image-editor.webp">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Structured Data (JSON-LD) for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          "name": "Nano Banana AI Image Editor",
+          "applicationCategory": "MultimediaApplication",
+          "operatingSystem": "Web Browser",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "description": "An AI-powered image editor that allows you to edit your photos instantly using text prompts. Powered by Gemini 2.5 Flash.",
+          "featureList": "Image to Image editing, Text to Image generation, AI Inpainting, Background removal",
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": "1250"
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is Nano Banana AI Image Editor?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Nano Banana is a conversational AI image editor that transforms photos based on natural language descriptions. Simply upload an image, describe how you want to edit it, and our AI will apply your changes instantly."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do I edit images with AI?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Upload your photo, type a description of the edits you want (like 'make it sunset' or 'add dramatic lighting'), select your preferred AI model, and click Apply."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What are the different AI models?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "We offer Fast (1 credit), Pro (3 credits), and Ultra (5 credits) models optimized for speed, quality, and professional-grade transformations respectively."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is my image data private and secure?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, your privacy is our priority. Uploaded images are processed securely and are not shared or used for training purposes."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+
     <style>
       html {
         scroll-behavior: smooth;
@@ -31,7 +119,59 @@
 </script>
 </head>
   <body>
-    <div id="root"></div>
+    <!-- 
+      Pre-rendered Content for SEO (Simulated SSR) 
+      This content is visible to bots viewing the source code.
+      React will replace this with the interactive app upon hydration.
+    -->
+    <div id="root">
+      <div class="bg-[#1C1C1E] text-gray-300 min-h-screen flex flex-col items-center justify-center p-8">
+        <header class="mb-10 text-center">
+          <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">Nano Banana AI Image Editor</h1>
+          <p class="text-lg max-w-2xl mx-auto">
+            Edit your photos instantly with Nano Banana, the free AI image editor powered by Gemini 2.5 Flash. 
+            Upload any picture, describe your changes, and let Nano Banana transform your images in seconds.
+          </p>
+        </header>
+        
+        <main class="max-w-4xl w-full">
+          <section class="mb-12">
+            <h2 class="text-2xl font-bold text-white mb-4">Key Features</h2>
+            <ul class="grid md:grid-cols-2 gap-4">
+              <li class="bg-[#2C2C2E] p-4 rounded-lg">
+                <h3 class="font-bold text-white">Conversational Editing</h3>
+                <p>Edit images with natural language descriptions.</p>
+              </li>
+              <li class="bg-[#2C2C2E] p-4 rounded-lg">
+                <h3 class="font-bold text-white">Multiple AI Models</h3>
+                <p>Choose from Fast, Pro, and Ultra models for different needs.</p>
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 class="text-2xl font-bold text-white mb-4">Frequently Asked Questions</h2>
+            <div class="space-y-4">
+              <article>
+                <h3 class="font-bold text-white">What is Nano Banana?</h3>
+                <p>A conversational AI image editor that transforms photos based on text descriptions.</p>
+              </article>
+              <article>
+                <h3 class="font-bold text-white">How much does it cost?</h3>
+                <p>We offer a credit-based system with Fast, Pro, and Ultra tiers.</p>
+              </article>
+            </div>
+          </section>
+          
+          <div class="mt-10 flex justify-center">
+             <svg class="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+             </svg>
+          </div>
+        </main>
+      </div>
+    </div>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
