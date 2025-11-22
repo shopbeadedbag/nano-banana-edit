@@ -4,28 +4,37 @@ import { editImage, generateImageFromText } from './services/geminiService';
 import { LogoIcon, StarIcon, ChevronDownIcon, ArrowRightIcon, SpinnerIcon, RetryIcon, ShareIcon, XIcon, GlobeIcon, MenuIcon, InfoIcon, ResetIcon, CopyIcon, ImageIcon, DownloadIcon, CloudUploadIcon, TextToImageIcon } from './components/icons';
 
 // --- SEO Helper Component ---
-const SeoHead: React.FC<{ title: string; description: string; lang: string }> = ({ title, description, lang }) => {
+// Manages dynamic head elements (Title, Meta, Canonical, JSON-LD)
+const SeoHead: React.FC<{ title: string; description: string; lang: string; path?: string }> = ({ title, description, lang, path = "" }) => {
   useEffect(() => {
     // Update Title
     document.title = title;
 
     // Update Meta Description
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) {
-        metaDesc.setAttribute('content', description);
-    } else {
-        const newMeta = document.createElement('meta');
-        newMeta.name = 'description';
-        newMeta.content = description;
-        document.head.appendChild(newMeta);
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+        metaDesc = document.createElement('meta');
+        metaDesc.setAttribute('name', 'description');
+        document.head.appendChild(metaDesc);
     }
+    metaDesc.setAttribute('content', description);
     
     // Update Open Graph Tags
-    const ogTitle = document.querySelector('meta[property="og:title"]');
+    let ogTitle = document.querySelector('meta[property="og:title"]');
     if (ogTitle) ogTitle.setAttribute('content', title);
     
-    const ogDesc = document.querySelector('meta[property="og:description"]');
+    let ogDesc = document.querySelector('meta[property="og:description"]');
     if (ogDesc) ogDesc.setAttribute('content', description);
+
+    // Update Canonical URL
+    let linkCanonical = document.querySelector('link[rel="canonical"]');
+    const canonicalUrl = `https://nanobanana.com${path}`;
+    if (!linkCanonical) {
+        linkCanonical = document.createElement('link');
+        linkCanonical.setAttribute('rel', 'canonical');
+        document.head.appendChild(linkCanonical);
+    }
+    linkCanonical.setAttribute('href', canonicalUrl);
 
     // Map display language to ISO code for html tag
     const langMap: Record<string, string> = {
@@ -35,22 +44,26 @@ const SeoHead: React.FC<{ title: string; description: string; lang: string }> = 
     };
     document.documentElement.lang = langMap[lang] || 'en';
     
-    // Update JSON-LD Schema
+    // Update JSON-LD Schema (Dynamic injection if needed, though static index.html handles main schema)
     const schemaScript = document.querySelector('script[type="application/ld+json"]');
     if (schemaScript) {
-         const schema = JSON.parse(schemaScript.textContent || '{}');
-         // Update description in schema if it exists in the array
-         if (Array.isArray(schema['@graph'])) {
-             const appSchema = schema['@graph'].find((item: any) => item['@type'] === 'SoftwareApplication');
-             if (appSchema) {
-                 appSchema.description = description;
-                 appSchema.inLanguage = langMap[lang] || 'en';
-                 schemaScript.textContent = JSON.stringify(schema);
+         try {
+             const schema = JSON.parse(schemaScript.textContent || '{}');
+             // Update description in schema if it exists in the array
+             if (Array.isArray(schema['@graph'])) {
+                 const appSchema = schema['@graph'].find((item: any) => item['@type'] === 'SoftwareApplication');
+                 if (appSchema) {
+                     appSchema.description = description;
+                     appSchema.inLanguage = langMap[lang] || 'en';
+                     schemaScript.textContent = JSON.stringify(schema);
+                 }
              }
+         } catch (e) {
+             // Ignore parse errors on static schema
          }
     }
 
-  }, [title, description, lang]);
+  }, [title, description, lang, path]);
 
   return null;
 };
@@ -323,24 +336,24 @@ const content = {
         a: "Fast model (1 credit) provides quick edits for simple changes. Pro model (3 credits) offers better quality for detailed work. Ultra model (5 credits) delivers the highest quality results for professional-grade transformations. Choose based on your needs and quality requirements."
       },
       {
-        q: "Can I undo or go back to previous edits?",
-        a: "Yes! Nano Banana automatically saves your edit history with up to 10 versions. Click any previous version in the history stack to continue editing from that point or download earlier versions."
+        "q": "Can I undo or go back to previous edits?",
+        "a": "Yes! Nano Banana automatically saves your edit history with up to 10 versions. Click any previous version in the history stack to continue editing from that point or download earlier versions."
       },
       {
-        q: "What image formats are supported?",
-        a: "Nano Banana supports all common image formats including JPG, JPEG, PNG, WEBP, and more. Images must be at least 250x250 pixels for best results."
+        "q": "What image formats are supported?",
+        "a": "Nano Banana supports all common image formats including JPG, JPEG, PNG, WEBP, and more. Images must be at least 250x250 pixels for best results."
       },
       {
-        q: "How many credits does it cost?",
-        a: "Credit costs vary by AI model: Fast costs 1 credit, Pro costs 3 credits, and Ultra costs 5 credits per edit. You can purchase credits or subscribe to Pixlr Plus for unlimited editing."
+        "q": "How many credits does it cost?",
+        "a": "Credit costs vary by AI model: Fast costs 1 credit, Pro costs 3 credits, and Ultra costs 5 credits per edit. You can purchase credits or subscribe to Pixlr Plus for unlimited editing."
       },
       {
-        q: "Can I edit the same image multiple times?",
-        a: "Absolutely! Each new prompt applies to your currently selected image in the history. You can continue refining and editing the same photo as many times as you want, building on previous edits or starting fresh from earlier versions."
+        "q": "Can I edit the same image multiple times?",
+        "a": "Absolutely! Each new prompt applies to your currently selected image in the history. You can continue refining and editing the same photo as many times as you want, building on previous edits or starting fresh from earlier versions."
       },
       {
-        q: "Is my image data private and secure?",
-        a: "Yes, your privacy is our priority. Uploaded images are processed securely and are not shared or used for training purposes. All images are handled according to our privacy policy and industry security standards."
+        "q": "Is my image data private and secure?",
+        "a": "Yes, your privacy is our priority. Uploaded images are processed securely and are not shared or used for training purposes. All images are handled according to our privacy policy and industry security standards."
       }
     ]
   }
@@ -531,7 +544,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
   );
 
   return (
-    <div className="bg-[#1C1C1E] text-gray-300 antialiased">
+    <div className="bg-[#1C1C1E] text-gray-300 antialiased min-h-screen">
        <SeoHead title={currentSeo.title} description={currentSeo.description} lang={currentLang} />
        <header className="sticky top-0 z-50 backdrop-blur-sm bg-[#1C1C1E]/80 border-b border-zinc-800">
             <nav className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
