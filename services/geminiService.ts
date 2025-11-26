@@ -10,9 +10,10 @@ const handleGeminiError = (error: any): never => {
   if (
       errorMessage.includes('429') || 
       errorMessage.includes('RESOURCE_EXHAUSTED') || 
-      errorMessage.includes('Quota exceeded')
+      errorMessage.includes('Quota exceeded') ||
+      errorMessage.includes('Too Many Requests')
   ) {
-    throw new Error("⚠️ High Traffic / Quota Exceeded. The free tier limit for this model has been reached. Please wait a minute and try again.");
+    throw new Error("⚠️ System Busy. High traffic detected. Please wait 30 seconds and try again.");
   }
 
   // 2. Check for Safety Blocks
@@ -29,7 +30,7 @@ const handleGeminiError = (error: any): never => {
           
           if (parsed.error) {
               if (parsed.error.code === 429 || parsed.error.status === 'RESOURCE_EXHAUSTED') {
-                 throw new Error("⚠️ High Traffic / Quota Exceeded. The free tier limit has been reached. Retrying...");
+                 throw new Error("⚠️ Quota Exceeded. Retrying...");
               }
               errorMessage = parsed.error.message || errorMessage;
           }
@@ -44,11 +45,14 @@ const handleGeminiError = (error: any): never => {
 /**
  * Retries an async operation with exponential backoff.
  * Useful for handling 429/503 errors from the API.
+ * 
+ * UPDATED: Increased initial delay to 5000ms to handle the 16s retry requirement from Google.
+ * Sequence: 5s -> 10s -> 20s.
  */
 async function withRetry<T>(
     operation: () => Promise<T>, 
     retries: number = 3, 
-    initialDelay: number = 2000
+    initialDelay: number = 5000 
 ): Promise<T> {
     let lastError: any;
     
@@ -58,6 +62,7 @@ async function withRetry<T>(
         } catch (error: any) {
             lastError = error;
             const msg = error.message || "";
+            const errString = JSON.stringify(error);
             
             // Only retry on specific transient errors or rate limits
             const isRetryable = 
@@ -66,14 +71,16 @@ async function withRetry<T>(
                 msg.includes("Quota") ||
                 msg.includes("High Traffic") ||
                 msg.includes("RESOURCE_EXHAUSTED") ||
-                msg.includes("fetch failed");
+                msg.includes("Too Many Requests") ||
+                msg.includes("fetch failed") ||
+                errString.includes("429");
 
             if (!isRetryable || i === retries - 1) {
                 throw error;
             }
 
-            const delay = initialDelay * Math.pow(2, i); // 2s, 4s, 8s...
-            console.log(`⚠️ API Error (Attempt ${i + 1}/${retries}). Retrying in ${delay}ms...`);
+            const delay = initialDelay * Math.pow(2, i); // 5s, 10s, 20s...
+            console.warn(`⚠️ API Error (Attempt ${i + 1}/${retries}). Waiting ${delay}ms before retry...`);
             await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
@@ -82,7 +89,10 @@ async function withRetry<T>(
 
 // Configuration
 const MODEL_NAME = 'gemini-2.5-flash-image'; 
-// HARDCODED API KEY AS REQUESTED
+
+// HARDCODED API KEY
+// ⚠️ RECOMMENDATION: Generate a NEW key at aistudio.google.com and replace this one.
+// The current key may be rate-limited due to frequent usage.
 const API_KEY = 'AIzaSyBxNOEfrwAZO_fyYKEqsUXXnS7f37EPDik';
 
 /**
