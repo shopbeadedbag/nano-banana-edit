@@ -2,8 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="https://www.bestimageeditor.online/assets/icon-DrMS04Sm.png" />
+    <link rel="icon" type="image/png" href="/icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1C1C1E" />
+    
+    <!-- Performance: Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://pixlr.com">
     
     <!-- Primary Meta Tags -->
     <title>Nano Banana - Free AI Image Editor | Edit Photos with Text Prompts</title>
@@ -15,6 +21,7 @@
     
     <!-- Canonical -->
     <link rel="canonical" href="https://bestimageeditor.online/" />
+    <link rel="manifest" href="/manifest.json" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -32,8 +39,6 @@
     <meta property="twitter:image" content="https://pixlr.com/images/prompter/nano-banan-ai-image-editor.webp">
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Structured Data (JSON-LD) -->
@@ -161,17 +166,19 @@
       html { scroll-behavior: smooth; }
       body { background-color: #1C1C1E; color: #fff; font-family: 'Poppins', sans-serif; margin: 0; }
     </style>
-    <script type="importmap">
-    {
-      "imports": {
-        "react/": "https://aistudiocdn.com/react@^19.2.0/",
-        "react": "https://aistudiocdn.com/react@^19.2.0",
-        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.27.0",
-        "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
-      }
-    }
-    </script>
-  </head>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "vite": "https://aistudiocdn.com/vite@^7.2.4",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
+  }
+}
+</script>
+</head>
   <body>
     <!-- Simulated SSR Content for SEO -->
     <div id="root">
@@ -181,7 +188,7 @@
         <header class="sticky top-0 z-50 backdrop-blur-sm bg-[#1C1C1E]/80 border-b border-zinc-800">
           <nav class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
             <div class="flex items-center space-x-2">
-              <img src="https://www.bestimageeditor.online/assets/icon-DrMS04Sm.png" alt="Nano Banana" class="w-8 h-8" />
+              <img src="/icon.png" alt="Nano Banana" class="w-8 h-8" width="32" height="32" />
               <span class="font-semibold text-lg text-white">Nano Banana</span>
             </div>
             <ul class="hidden md:flex items-center space-x-8">
@@ -285,21 +292,21 @@
                    <h3 class="text-3xl font-bold text-white mb-6">Nano Banana Conversational AI Photo Editing</h3>
                    <p class="text-gray-400 leading-relaxed">Nano Banana lets you edit images the way you think - with natural conversation. No complex tools or tutorials needed. Just describe what you want and Nano Banana's advanced AI understands and executes your creative vision instantly. From simple adjustments to dramatic transformations, Nano Banana's conversational editing makes professional results accessible to everyone.</p>
                 </div>
-                <div><img src="https://pixlr.com/images/prompter/conversational.webp" alt="Conversational AI" class="rounded-2xl w-full h-auto object-cover" /></div>
+                <div><img src="https://pixlr.com/images/prompter/conversational.webp" alt="Conversational AI" class="rounded-2xl w-full h-auto object-cover" width="600" height="400" /></div>
              </article>
              <article class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
                 <div class="lg:order-2">
                    <h3 class="text-3xl font-bold text-white mb-6">Nano Banana Edit History & Version Control</h3>
                    <p class="text-gray-400 leading-relaxed">Never lose your creative progress with Nano Banana. The AI editor automatically saves every edit in an intuitive visual timeline. Click any previous Nano Banana version to continue editing from that point, or compare results side-by-side. Your Nano Banana editing journey is preserved, giving you complete creative freedom to explore and experiment.</p>
                 </div>
-                <div class="lg:order-1"><img src="https://pixlr.com/images/prompter/history.webp" alt="Version Control" class="rounded-2xl w-full h-auto object-cover" /></div>
+                <div class="lg:order-1"><img src="https://pixlr.com/images/prompter/history.webp" alt="Version Control" class="rounded-2xl w-full h-auto object-cover" width="600" height="400" /></div>
              </article>
              <article class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
                 <div>
                    <h3 class="text-3xl font-bold text-white mb-6">Nano Banana AI Models - Fast, Pro, and Ultra</h3>
                    <p class="text-gray-400 leading-relaxed">Nano Banana offers three powerful AI models to choose from. Nano Banana Fast delivers quick results for simple edits. Nano Banana Pro provides enhanced quality for detailed work. Nano Banana Ultra unleashes maximum AI power for professional-grade transformations. Switch between Nano Banana models anytime to match your project needs.</p>
                 </div>
-                <div><img src="https://pixlr.com/images/prompter/banana.webp" alt="AI Models" class="rounded-2xl w-full h-auto object-cover" /></div>
+                <div><img src="https://pixlr.com/images/prompter/banana.webp" alt="AI Models" class="rounded-2xl w-full h-auto object-cover" width="600" height="400" /></div>
              </article>
           </section>
 

@@ -11,7 +11,7 @@ const DEFAULT_LANG: LangCode = 'en';
 
 const getLangFromPath = (): LangCode => {
   const path = window.location.pathname;
-  const firstSegment = path.split('/')[1]; // /es/foo -> es
+  const firstSegment = path.split('/')[1]; 
   if (firstSegment && SUPPORTED_LANGS.includes(firstSegment as LangCode)) {
     return firstSegment as LangCode;
   }
@@ -21,19 +21,13 @@ const getLangFromPath = (): LangCode => {
 const navigateToLang = (targetLang: LangCode) => {
   const currentPath = window.location.pathname;
   const segments = currentPath.split('/').filter(Boolean);
-  
-  // If first segment is a lang code, remove it
   if (segments.length > 0 && SUPPORTED_LANGS.includes(segments[0] as LangCode)) {
     segments.shift();
   }
-  
   const cleanPath = segments.join('/');
-  // Default lang goes to root, others go to /code
   const newPath = targetLang === DEFAULT_LANG 
     ? `/${cleanPath}` 
     : `/${targetLang}/${cleanPath}`;
-    
-  // Normalize double slashes
   window.location.href = newPath.replace('//', '/');
 };
 
@@ -64,14 +58,11 @@ const cropImage = (imageUrl: string, targetRatioString: string): Promise<string>
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             if (!ctx) return reject(new Error('Could not get canvas context'));
-
             const originalWidth = img.width;
             const originalHeight = img.height;
             const originalRatio = originalWidth / originalHeight;
             const targetRatio = getAspectRatioFromString(targetRatioString);
-
             let cropWidth, cropHeight, cropX, cropY;
-
             if (originalRatio > targetRatio) {
                 cropHeight = originalHeight;
                 cropWidth = originalHeight * targetRatio;
@@ -83,7 +74,6 @@ const cropImage = (imageUrl: string, targetRatioString: string): Promise<string>
                 cropX = 0;
                 cropY = (originalHeight - cropHeight) / 2;
             }
-
             canvas.width = cropWidth;
             canvas.height = cropHeight;
             ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
@@ -107,7 +97,7 @@ const PolicyPage: React.FC<PolicyPageProps> = ({ title, onClose, children }) => 
       <div className="bg-[#1C1C1E] rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col relative border border-zinc-700 shadow-2xl" onClick={e => e.stopPropagation()}>
         <header className="flex items-center justify-between p-5 border-b border-zinc-700 flex-shrink-0">
           <h2 className="text-xl font-bold text-white">{title}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white"><XIcon className="w-6 h-6" /></button>
+          <button onClick={onClose} className="text-gray-400 hover:text-white" aria-label="Close"><XIcon className="w-6 h-6" /></button>
         </header>
         <div className="p-6 overflow-y-auto text-gray-300 space-y-4 leading-relaxed">{children}</div>
       </div>
@@ -116,7 +106,6 @@ const PolicyPage: React.FC<PolicyPageProps> = ({ title, onClose, children }) => 
 };
 
 const App: React.FC = () => {
-  // 1. I18n Setup
   const currentLang = getLangFromPath();
   const t = locales[currentLang] || locales['en'];
   const langNames: Record<LangCode, string> = {
@@ -124,7 +113,6 @@ const App: React.FC = () => {
       ru: 'Русский', ar: 'العربية', id: 'Bahasa Indo', vn: 'Tiếng Việt', th: 'ไทย'
   };
 
-  // 2. App State
   type Mode = 'image-to-image' | 'text-to-image';
   const [mode, setMode] = useState<Mode>('image-to-image');
   const [originalImage, setOriginalImage] = useState<ImageFile | null>(null);
@@ -146,7 +134,6 @@ const App: React.FC = () => {
   const currentResult = mode === 'image-to-image' ? i2iResult : t2iResult;
   const langMenuRef = useRef<HTMLDivElement>(null);
 
-  // 3. Content (Partially dynamic for lists, fully dynamic for main text)
   const navLinks = [
       { href: '#editor', label: t.navEditor },
       { href: '#how-it-works', label: t.navHow },
@@ -177,7 +164,6 @@ const App: React.FC = () => {
       { title: "Cyberpunk Cityscapes", imageUrl: "https://pixlr.com/images/prompter/example/dslr-portraits.webp" }
   ];
 
-  // 4. Effects
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (langMenuRef.current && !langMenuRef.current.contains(event.target as Node)) {
@@ -188,7 +174,6 @@ const App: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [langMenuRef]);
 
-  // 5. Handlers
   const handleFileSelect = () => document.getElementById('file-upload')?.click();
   const handleCopyPrompt = () => navigator.clipboard.writeText(currentPrompt);
   
@@ -244,7 +229,6 @@ const App: React.FC = () => {
 
   return (
     <div className="bg-[#1C1C1E] text-gray-300 antialiased min-h-screen">
-       {/* Dynamic SEO Head */}
        <SeoHead t={t} lang={currentLang} />
 
        <header className="sticky top-0 z-50 backdrop-blur-sm bg-[#1C1C1E]/80 border-b border-zinc-800">
@@ -264,7 +248,7 @@ const App: React.FC = () => {
 
                 <div className="flex items-center space-x-4">
                     <div className="relative" ref={langMenuRef}>
-                        <button onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} className="flex items-center space-x-1 text-gray-300 hover:text-white transition-colors">
+                        <button onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} className="flex items-center space-x-1 text-gray-300 hover:text-white transition-colors" aria-label="Language Selector">
                             <GlobeIcon className="w-5 h-5" />
                             <span className="hidden sm:inline text-sm uppercase">{currentLang}</span>
                             <ChevronDownIcon className={`w-4 h-4 transition-transform ${isLangMenuOpen ? 'rotate-180' : ''}`} />
@@ -280,7 +264,7 @@ const App: React.FC = () => {
                         )}
                     </div>
                     <div className="md:hidden">
-                        <button onClick={() => setIsMobileMenuOpen(true)}><MenuIcon className="w-6 h-6" /></button>
+                        <button onClick={() => setIsMobileMenuOpen(true)} aria-label="Menu"><MenuIcon className="w-6 h-6" /></button>
                     </div>
                 </div>
             </nav>
@@ -288,7 +272,7 @@ const App: React.FC = () => {
 
         {isMobileMenuOpen && (
             <div className="fixed inset-0 z-50 bg-[#1C1C1E]/90 backdrop-blur-sm md:hidden">
-                <div className="flex justify-end p-4"><button onClick={() => setIsMobileMenuOpen(false)}><XIcon className="w-8 h-8" /></button></div>
+                <div className="flex justify-end p-4"><button onClick={() => setIsMobileMenuOpen(false)} aria-label="Close"><XIcon className="w-8 h-8" /></button></div>
                 <ul className="flex flex-col items-center justify-center h-full -mt-16 space-y-8">
                     {navLinks.map(link => (
                         <li key={link.href}><a href={link.href} onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-semibold text-gray-200">{link.label}</a></li>
@@ -320,27 +304,39 @@ const App: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div className="lg:col-span-4 space-y-6 flex flex-col">
                     <div className="relative">
-                        <textarea value={currentPrompt} onChange={(e) => e.target.value.length <= 2000 && setCurrentPrompt(e.target.value)} placeholder={t.inputPlaceholder} className="w-full bg-[#1c1c1c] border border-zinc-700 rounded-xl p-4 text-white h-36 resize-none" />
+                        <textarea 
+                            value={currentPrompt} 
+                            onChange={(e) => e.target.value.length <= 2000 && setCurrentPrompt(e.target.value)} 
+                            placeholder={t.inputPlaceholder} 
+                            className="w-full bg-[#1c1c1c] border border-zinc-700 rounded-xl p-4 text-white h-36 resize-none" 
+                            aria-label="Input Prompt"
+                        />
                         <div className="absolute bottom-3 right-3 flex items-center space-x-2 text-xs text-zinc-400">
                             <span>{currentPrompt.length}/2000</span>
-                            <button onClick={handleCopyPrompt}><CopyIcon className="w-4 h-4" /></button>
-                            <button onClick={() => setCurrentPrompt('')}><XIcon className="w-4 h-4" /></button>
+                            <button onClick={handleCopyPrompt} aria-label="Copy"><CopyIcon className="w-4 h-4" /></button>
+                            <button onClick={() => setCurrentPrompt('')} aria-label="Clear"><XIcon className="w-4 h-4" /></button>
                         </div>
                     </div>
                     <div>
                         <div className="flex items-center justify-between bg-[#1c1c1c] border border-zinc-700 rounded-xl p-4 mb-3">
                             <span className="text-sm font-medium">{t.ratioAuto}</span>
-                            <input type="checkbox" checked={autoRatio} onChange={() => setAutoRatio(!autoRatio)} />
+                            <input type="checkbox" checked={autoRatio} onChange={() => setAutoRatio(!autoRatio)} aria-label="Auto Ratio Toggle" />
                         </div>
-                        <select value={aspectRatio} onChange={(e) => setAspectRatio(e.target.value)} disabled={autoRatio} className="w-full bg-[#1c1c1c] border border-zinc-700 rounded-xl p-4 text-sm disabled:opacity-50">
+                        <select 
+                            value={aspectRatio} 
+                            onChange={(e) => setAspectRatio(e.target.value)} 
+                            disabled={autoRatio} 
+                            className="w-full bg-[#1c1c1c] border border-zinc-700 rounded-xl p-4 text-sm disabled:opacity-50"
+                            aria-label="Aspect Ratio"
+                        >
                             <option value="1:1">1:1 Square</option>
                             <option value="16:9">16:9 Landscape</option>
                             <option value="9:16">9:16 Portrait</option>
                         </select>
                     </div>
                     {mode === 'image-to-image' && (
-                        <div onClick={handleFileSelect} className="mt-2 w-full h-36 border-2 border-dashed border-zinc-600 rounded-xl flex items-center justify-center text-center hover:border-zinc-400 cursor-pointer bg-black/20">
-                            {originalImage ? <img src={originalImage.dataUrl} className="max-h-full max-w-full object-contain p-2" /> : <p className="text-zinc-400 text-sm">{t.uploadBtn}</p>}
+                        <div onClick={handleFileSelect} className="mt-2 w-full h-36 border-2 border-dashed border-zinc-600 rounded-xl flex items-center justify-center text-center hover:border-zinc-400 cursor-pointer bg-black/20" role="button" aria-label="Upload File">
+                            {originalImage ? <img src={originalImage.dataUrl} className="max-h-full max-w-full object-contain p-2" alt="Preview" /> : <p className="text-zinc-400 text-sm">{t.uploadBtn}</p>}
                             <input id="file-upload" type="file" className="hidden" onChange={handleFileChange} accept="image/*" />
                         </div>
                     )}
@@ -355,7 +351,7 @@ const App: React.FC = () => {
                     </div>
                 </div>
                 <div className="lg:col-span-8 bg-black rounded-2xl flex items-center justify-center min-h-[40vh] relative overflow-hidden">
-                    {currentResult ? <img src={currentResult} className="w-full h-full object-contain" /> : <p className="text-zinc-500">Image Preview</p>}
+                    {currentResult ? <img src={currentResult} className="w-full h-full object-contain" alt="Generated Result" /> : <p className="text-zinc-500">Image Preview</p>}
                 </div>
             </div>
           </div>
@@ -374,7 +370,7 @@ const App: React.FC = () => {
              </div>
         </section>
 
-        {/* Features */}
+        {/* Features - Optimized Images */}
         <section id="features" className="py-20 md:py-32 space-y-28">
            {featuresList.map((feature, idx) => (
              <article key={idx} className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -382,19 +378,36 @@ const App: React.FC = () => {
                    <h3 className="text-3xl font-bold text-white mb-6">{feature.title}</h3>
                    <p className="text-gray-400 leading-relaxed">{feature.description}</p>
                 </div>
-                <img src={feature.imageUrl} className="rounded-2xl w-full h-auto object-cover" />
+                {/* Lazy load feature images to prioritize LCP */}
+                <img 
+                    src={feature.imageUrl} 
+                    className="rounded-2xl w-full h-auto object-cover bg-zinc-800" 
+                    alt={feature.title} 
+                    loading="lazy"
+                    decoding="async"
+                    width="600"
+                    height="400"
+                />
              </article>
            ))}
         </section>
 
-        {/* Transformations */}
+        {/* Transformations - Optimized Grid */}
         <section id="transformations" className="py-20 md:py-32 text-center">
           <h2 className="text-4xl font-bold text-white mb-6">{t.transTitle}</h2>
           <p className="text-gray-400 max-w-3xl mx-auto mb-16">{t.transSubtitle}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             {transformationsList.map((item, index) => (
               <article key={index} className="bg-[#2C2C2E] p-5 rounded-2xl text-left">
-                <img src={item.imageUrl} alt={item.title} className="rounded-lg w-full h-auto object-cover mb-4 aspect-[3/2]" />
+                <img 
+                    src={item.imageUrl} 
+                    alt={item.title} 
+                    className="rounded-lg w-full h-auto object-cover mb-4 aspect-[3/2] bg-zinc-800" 
+                    loading="lazy" 
+                    decoding="async"
+                    width="300"
+                    height="200"
+                />
                 <h4 className="font-semibold text-white mb-1">{item.title}</h4>
               </article>
             ))}
@@ -408,7 +421,7 @@ const App: React.FC = () => {
            <div className="space-y-4">
               {faqList.map((item, i) => (
                   <div key={i} className="bg-[#2C2C2E] rounded-xl">
-                    <button onClick={() => toggleFaq(i)} className="w-full flex justify-between items-center p-6 text-left">
+                    <button onClick={() => toggleFaq(i)} className="w-full flex justify-between items-center p-6 text-left" aria-expanded={activeFaq === i}>
                       <span className="text-lg font-medium text-white">{item.q}</span>
                       <span className="text-2xl text-gray-400">{activeFaq === i ? '-' : '+'}</span>
                     </button>
