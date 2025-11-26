@@ -80,8 +80,10 @@ async function withRetry<T>(
     throw lastError;
 }
 
-// Configuration for image generation
+// Configuration
 const MODEL_NAME = 'gemini-2.5-flash-image'; 
+// HARDCODED API KEY AS REQUESTED
+const API_KEY = 'AIzaSyDKA59ESviJBR1401czcFF497lXDVkCx8U';
 
 /**
  * Edit an existing image based on a prompt (Image-to-Image)
@@ -91,13 +93,9 @@ export const editImage = async (
   mimeType: string,
   prompt: string
 ): Promise<string> => {
-  // Use process.env.API_KEY directly as per guidelines
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) throw new Error("API Key not configured");
-
   return withRetry(async () => {
     try {
-      const ai = new GoogleGenAI({ apiKey });
+      const ai = new GoogleGenAI({ apiKey: API_KEY });
       
       const response = await ai.models.generateContent({
         model: MODEL_NAME,
@@ -145,13 +143,9 @@ export const editImage = async (
 export const generateImageFromText = async (
   prompt: string
 ): Promise<string> => {
-  // Use process.env.API_KEY directly as per guidelines
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) throw new Error("API Key not configured");
-
   return withRetry(async () => {
     try {
-      const ai = new GoogleGenAI({ apiKey });
+      const ai = new GoogleGenAI({ apiKey: API_KEY });
       
       const response = await ai.models.generateContent({
         model: MODEL_NAME,
