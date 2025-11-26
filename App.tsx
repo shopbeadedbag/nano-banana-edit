@@ -4,8 +4,9 @@ import { editImage, generateImageFromText } from './services/geminiService';
 import { LogoIcon, StarIcon, ChevronDownIcon, ArrowRightIcon, SpinnerIcon, RetryIcon, ShareIcon, XIcon, GlobeIcon, MenuIcon, InfoIcon, ResetIcon, CopyIcon, ImageIcon, DownloadIcon, CloudUploadIcon, TextToImageIcon } from './components/icons';
 
 // --- SEO Helper Component ---
-// Manages dynamic head elements (Title, Meta, Canonical, JSON-LD)
-const SeoHead: React.FC<{ title: string; description: string; lang: string; path?: string }> = ({ title, description, lang, path = "" }) => {
+// Manages dynamic head elements (Title, Meta, Canonical)
+// Falls back to index.html static content if JS is disabled
+const SeoHead: React.FC<{ title: string; description: string; path?: string }> = ({ title, description, path = "" }) => {
   useEffect(() => {
     // Update Title
     document.title = title;
@@ -28,42 +29,19 @@ const SeoHead: React.FC<{ title: string; description: string; lang: string; path
 
     // Update Canonical URL
     let linkCanonical = document.querySelector('link[rel="canonical"]');
-    const canonicalUrl = `https://nanobanana.com${path}`;
-    if (!linkCanonical) {
+    // Always use production domain
+    const canonicalUrl = `https://bestimageeditor.online${path}`;
+    
+    if (linkCanonical) {
+        linkCanonical.setAttribute('href', canonicalUrl);
+    } else {
         linkCanonical = document.createElement('link');
         linkCanonical.setAttribute('rel', 'canonical');
+        linkCanonical.setAttribute('href', canonicalUrl);
         document.head.appendChild(linkCanonical);
     }
-    linkCanonical.setAttribute('href', canonicalUrl);
 
-    // Map display language to ISO code for html tag
-    const langMap: Record<string, string> = {
-        'English': 'en',
-        '简体中文': 'zh-CN',
-        'Español': 'es'
-    };
-    document.documentElement.lang = langMap[lang] || 'en';
-    
-    // Update JSON-LD Schema (Dynamic injection if needed, though static index.html handles main schema)
-    const schemaScript = document.querySelector('script[type="application/ld+json"]');
-    if (schemaScript) {
-         try {
-             const schema = JSON.parse(schemaScript.textContent || '{}');
-             // Update description in schema if it exists in the array
-             if (Array.isArray(schema['@graph'])) {
-                 const appSchema = schema['@graph'].find((item: any) => item['@type'] === 'SoftwareApplication');
-                 if (appSchema) {
-                     appSchema.description = description;
-                     appSchema.inLanguage = langMap[lang] || 'en';
-                     schemaScript.textContent = JSON.stringify(schema);
-                 }
-             }
-         } catch (e) {
-             // Ignore parse errors on static schema
-         }
-    }
-
-  }, [title, description, lang, path]);
+  }, [title, description, path]);
 
   return null;
 };
@@ -176,16 +154,8 @@ const PolicyPage: React.FC<PolicyPageProps> = ({ title, onClose, children }) => 
 
 const seoData: Record<string, { title: string; description: string }> = {
   'English': {
-    title: 'Nano Banana - AI Image Editor | Edit Photos with Text Prompts',
-    description: 'Edit photos instantly with Nano Banana, the free AI image editor powered by Gemini 2.5 Flash. Describe changes with text to transform images, create art, and edit professionally without design skills.'
-  },
-  '简体中文': {
-    title: 'Nano Banana - AI 图片编辑器 | 通过文字指令编辑照片',
-    description: '使用 Nano Banana 即时编辑照片，这是一款由 Gemini 2.5 Flash 驱动的免费 AI 图片编辑器。只需描述您想要的更改，即可转换图像、创作艺术作品。'
-  },
-  'Español': {
-    title: 'Nano Banana - Editor de Imágenes IA | Edita Fotos con Texto',
-    description: 'Edita fotos al instante con Nano Banana, el editor de imágenes gratuito con IA impulsado por Gemini 2.5 Flash. Describe los cambios con texto para transformar imágenes y crear arte.'
+    title: 'Nano Banana - Free AI Image Editor | Edit Photos with Text Prompts',
+    description: 'Edit photos instantly with Nano Banana, the free AI image editor powered by Gemini 2.5 Flash. Upload any picture, describe your changes, and let Nano Banana transform your images in seconds.'
   }
 };
 
@@ -221,7 +191,7 @@ const App: React.FC = () => {
   // Get current SEO data
   const currentSeo = seoData[currentLang] || seoData['English'];
 
-  // Content previously from content.json
+  // Content for the app
 const content = {
   howToUse: {
     title: "How to Use Nano Banana AI Image Editor",
@@ -333,7 +303,7 @@ const content = {
       },
       {
         q: "What are the different AI models?",
-        a: "Fast model (1 credit) provides quick edits for simple changes. Pro model (3 credits) offers better quality for detailed work. Ultra model (5 credits) delivers the highest quality results for professional-grade transformations. Choose based on your needs and quality requirements."
+        a: "Nano Banana Fast delivers quick results for simple edits. Nano Banana Pro provides enhanced quality for detailed work. Nano Banana Ultra unleashes maximum AI power for professional-grade transformations. Switch between Nano Banana models anytime to match your project needs."
       },
       {
         "q": "Can I undo or go back to previous edits?",
@@ -341,7 +311,7 @@ const content = {
       },
       {
         "q": "What image formats are supported?",
-        "a": "Nano Banana supports all common image formats including JPG, JPEG, PNG, WEBP, and more. Images must be at least 250x250 pixels for best results."
+        "a": "Nano Banana supports all common image formats including JPG, PNG, and WEBP. Images must be at least 250x250 pixels for best results."
       },
       {
         "q": "How many credits does it cost?",
@@ -365,16 +335,9 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
         content: (
             <>
                 <h3 className="text-lg font-semibold text-white mb-2">1. Introduction</h3>
-                <p>Welcome to Nano Banana. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our AI Image Editor. Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the application.</p>
-                
-                <h3 className="text-lg font-semibold text-white mt-4 mb-2">2. Collection of Your Information</h3>
-                <p>We may collect information about you in a variety of ways. The information we may collect via the Application includes personal data, such as your name, shipping address, email address, and telephone number, and demographic information, such as your age, gender, hometown, and interests, that you voluntarily give to us when choosing to participate in various activities related to the Application, such as chat, posting messages in comment sections or our forums, liking posts, sending feedback, and responding to surveys. You are under no obligation to provide us with personal information of any kind, however your refusal to do so may prevent you from using certain features of the Application.</p>
-                
-                <h3 className="text-lg font-semibold text-white mt-4 mb-2">3. Use of Your Information</h3>
-                <p>Having accurate information about you permits us to provide you with a smooth, efficient, and customized experience. Specifically, we may use information collected about you via the Application to create and manage your account, process your transactions, and deliver targeted advertising, coupons, newsletters, and other information regarding promotions and the Application to you.</p>
-
-                 <h3 className="text-lg font-semibold text-white mt-4 mb-2">4. Contact Us</h3>
-                <p>If you have questions or comments about this Privacy Policy, please contact us at: support@nanobanana.com.</p>
+                <p>Welcome to Nano Banana. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our AI Image Editor.</p>
+                <h3 className="text-lg font-semibold text-white mt-4 mb-2">2. Data Usage</h3>
+                <p>We use the data collected to provide and improve our services. Your uploaded images are processed only for the purpose of generation and are not used for model training without consent.</p>
             </>
         )
     },
@@ -382,14 +345,8 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
         title: "Terms of Service",
         content: (
             <>
-                <h3 className="text-lg font-semibold text-white mb-2">1. Agreement to Terms</h3>
-                <p>By using our AI Image Editor, you agree to be bound by these Terms of Service. If you do not agree to these Terms, do not use the service. We may modify the Terms at any time, in our sole discretion. If we do so, we’ll let you know either by posting the modified Terms on the site or through other communications.</p>
-                
-                <h3 className="text-lg font-semibold text-white mt-4 mb-2">2. Use of the Service</h3>
-                <p>You may use the Service only if you are 13 years or older and are not barred from using the Services under applicable law. You agree not to use the Services for any fraudulent, unlawful, or abusive purpose, or in any way that interferes with the proper functioning of the Services.</p>
-                
-                <h3 className="text-lg font-semibold text-white mt-4 mb-2">3. User Content</h3>
-                <p>For purposes of these Terms, "Content" means text, graphics, images, music, software, audio, video, works of authorship of any kind, and information or other materials that are posted, generated, provided or otherwise made available through the Services. You are responsible for the Content that you post to the Service, including its legality, reliability, and appropriateness. By posting Content to the Service, you grant us the right and license to use, modify, publicly perform, publicly display, reproduce, and distribute such Content on and through the Service.</p>
+                <h3 className="text-lg font-semibold text-white mb-2">1. Acceptance of Terms</h3>
+                <p>By accessing and using Nano Banana, you accept and agree to be bound by the terms and provision of this agreement.</p>
             </>
         )
     },
@@ -397,14 +354,8 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
         title: "Refund Policy",
         content: (
             <>
-                <h3 className="text-lg font-semibold text-white mb-2">1. General Policy</h3>
-                <p>Thank you for using Nano Banana. We offer a 14-day refund policy for credit purchases. If you are not satisfied with your purchase, you can request a refund within 14 days of the transaction date.</p>
-                
-                <h3 className="text-lg font-semibold text-white mt-4 mb-2">2. Eligibility for a Refund</h3>
-                <p>To be eligible for a refund, you must have a valid reason for your dissatisfaction. Reasons may include technical issues with the service that prevent you from using your credits, or if the service did not perform as described. We reserve the right to decline a refund request if we find evidence of fraud, abuse, or other manipulative behavior.</p>
-                
-                <h3 className="text-lg font-semibold text-white mt-4 mb-2">3. How to Request a Refund</h3>
-                <p>To request a refund, please contact our support team at support@nanobanana.com with your transaction details and a brief explanation of your reason for the request. Our team will review your request and process it within 5-7 business days.</p>
+                <h3 className="text-lg font-semibold text-white mb-2">1. Refund Eligibility</h3>
+                <p>If you are not satisfied with the service due to technical issues, you may be eligible for a refund within 14 days of purchase. Contact support for assistance.</p>
             </>
         )
     },
@@ -545,7 +496,8 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
 
   return (
     <div className="bg-[#1C1C1E] text-gray-300 antialiased min-h-screen">
-       <SeoHead title={currentSeo.title} description={currentSeo.description} lang={currentLang} />
+       <SeoHead title={currentSeo.title} description={currentSeo.description} />
+       
        <header className="sticky top-0 z-50 backdrop-blur-sm bg-[#1C1C1E]/80 border-b border-zinc-800">
             <nav className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
                 <a href="#" className="flex items-center space-x-2">
@@ -570,9 +522,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                         </button>
                         {isLangMenuOpen && (
                             <div className="absolute right-0 mt-2 w-40 bg-zinc-900 border border-zinc-700 rounded-md shadow-lg py-1">
-                                <a href="#" onClick={(e) => { e.preventDefault(); setCurrentLang('English'); setIsLangMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-300 hover:bg-zinc-800">English</a>
-                                <a href="#" onClick={(e) => { e.preventDefault(); setCurrentLang('简体中文'); setIsLangMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-300 hover:bg-zinc-800">简体中文</a>
-                                <a href="#" onClick={(e) => { e.preventDefault(); setCurrentLang('Español'); setIsLangMenuOpen(false); }} className="block px-4 py-2 text-sm text-gray-300 hover:bg-zinc-800">Español</a>
+                                <button onClick={() => { setCurrentLang('English'); setIsLangMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-zinc-800">English</button>
                             </div>
                         )}
                     </div>
@@ -672,37 +622,32 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
                         </div>
                     </div>
                     <div>
-                        <label className="text-sm font-medium text-gray-300" id="ratio-label">Ratio</label>
-                        <div className="mt-2 space-y-3">
-                            <div className="flex items-center justify-between bg-[#1c1c1c] border border-zinc-700 rounded-xl p-4">
-                                <div className="flex items-center">
-                                    <span className="text-sm font-medium">Auto Ratio</span>
-                                    <InfoIcon className="w-4 h-4 ml-1.5 text-zinc-400" />
-                                </div>
-                                <label className="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" checked={autoRatio} onChange={() => setAutoRatio(!autoRatio)} className="sr-only peer" aria-label="Toggle Auto Ratio" />
-                                    <div className="w-11 h-6 bg-zinc-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-500"></div>
-                                </label>
+                        <div className="flex items-center justify-between bg-[#1c1c1c] border border-zinc-700 rounded-xl p-4 mb-3">
+                            <div className="flex items-center">
+                                <span className="text-sm font-medium">Auto Ratio</span>
+                                <InfoIcon className="w-4 h-4 ml-1.5 text-zinc-400" />
                             </div>
-                            <select 
-                                value={aspectRatio}
-                                onChange={(e) => setAspectRatio(e.target.value)}
-                                disabled={autoRatio}
-                                className="w-full bg-[#1c1c1c] border border-zinc-700 rounded-xl p-4 text-sm font-medium focus:ring-2 focus:ring-pink-500 focus:border-pink-500 appearance-none bg-no-repeat bg-right-3 disabled:opacity-50 disabled:cursor-not-allowed" 
-                                style={{backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.25em'}}
-                                aria-labelledby="ratio-label"
-                            >
-                                <option value="1:1">1:1 Square</option>
-                                <option value="16:9">16:9 Landscape</option>
-                                <option value="9:16">9:16 Portrait</option>
-                                <option value="4:3">4:3 Landscape</option>
-                                <option value="3:4">3:4 Portrait</option>
-                            </select>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" checked={autoRatio} onChange={() => setAutoRatio(!autoRatio)} className="sr-only peer" aria-label="Toggle Auto Ratio" />
+                                <div className="w-11 h-6 bg-zinc-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-500"></div>
+                            </label>
                         </div>
+                        <select 
+                            value={aspectRatio}
+                            onChange={(e) => setAspectRatio(e.target.value)}
+                            disabled={autoRatio}
+                            className="w-full bg-[#1c1c1c] border border-zinc-700 rounded-xl p-4 text-sm font-medium focus:ring-2 focus:ring-pink-500 focus:border-pink-500 appearance-none bg-no-repeat bg-right-3 disabled:opacity-50 disabled:cursor-not-allowed" 
+                            style={{backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.25em'}}
+                        >
+                            <option value="1:1">1:1 Square</option>
+                            <option value="16:9">16:9 Landscape</option>
+                            <option value="9:16">9:16 Portrait</option>
+                            <option value="4:3">4:3 Landscape</option>
+                            <option value="3:4">3:4 Portrait</option>
+                        </select>
                     </div>
                     {mode === 'image-to-image' && (
                         <div>
-                            <label className="text-sm font-medium text-gray-300">Images</label>
                             <div onClick={handleFileSelect} className="mt-2 w-full h-36 border-2 border-dashed border-zinc-600 rounded-xl flex items-center justify-center text-center hover:border-zinc-400 cursor-pointer transition-colors bg-black/20" role="button" aria-label="Upload image">
                                 {originalImage ? (
                                     <img src={originalImage.dataUrl} alt="uploaded preview" className="max-h-full max-w-full object-contain p-2" />
@@ -853,7 +798,7 @@ const policies: { [key: string]: { title: string; content: React.ReactNode } } =
       </main>
 
       <footer className="text-center py-12 mt-24 border-t border-zinc-800">
-        <div className="flex justify-center items-center flex-wrap gap-x-6 gap-y-2 mb-4">
+        <div className="flex justify-center items-center gap-6 mb-4">
             <button onClick={() => setActivePolicy('privacy')} className="text-gray-400 hover:text-white text-sm transition-colors">Privacy Policy</button>
             <button onClick={() => setActivePolicy('terms')} className="text-gray-400 hover:text-white text-sm transition-colors">Terms of Service</button>
             <button onClick={() => setActivePolicy('refund')} className="text-gray-400 hover:text-white text-sm transition-colors">Refund Policy</button>
