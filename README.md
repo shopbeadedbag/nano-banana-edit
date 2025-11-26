@@ -1,20 +1,44 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Nano Banana – AI Image Editor  
+**https://www.bestimageeditor.online/**
 
-# Run and deploy your AI Studio app
+Nano Banana is a free AI-powered image editor built with **Gemini 2.5 Flash**, enabling instant photo editing with natural language prompts. Upload any image, describe your desired changes, and get high-quality results within seconds—no design skills needed.
 
-This contains everything you need to run your app locally.
+## ✨ Key Features
+- **Conversational Editing** – Edit photos simply by describing what you want.
+- **Image-to-Image & Text-to-Image** – Transform existing photos or generate new ones from text.
+- **Three AI Models** – Choose **Fast**, **Pro**, or **Ultra** for different speed and quality needs.
+- **Edit History** – Automatically saves every version for easy comparison and rollback.
+- **Format Support** – Works with JPG, PNG, WEBP, and more.
+- **One-Click Download** – Export final images instantly.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1OqqVYqierfFxlwnXeTLutRWk6NADwpdb
+## 🚀 How It Works
+1. **Upload Your Image**  
+   Drag and drop or select any photo.
 
-## Run Locally
+2. **Describe Your Edits**  
+   Enter a natural language prompt describing the transformation.
 
-**Prerequisites:**  Node.js
+3. **Choose a Model**  
+   Select Fast, Pro, or Ultra.
 
+4. **Generate & Download**  
+   Apply the edit, review results, and download your final image.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 🌟 Popular Transformations
+- Background replacement
+- Oil painting, anime, Ghibli, pixel art
+- AI celebrity selfies
+- DSLR-style portraits
+- 3D figurine & collectible renderings
+- Vintage & era-based transformations
+- Object and background removal
+- Creative scene and character edits
+
+## ❓ FAQ Highlights
+- **Can I undo edits?** Yes, all versions are saved.  
+- **Is my data private?** Yes, images are processed securely.  
+- **Can I edit the same image multiple times?** Absolutely.
+
+---
+
+© 2025 Nano Banana. All rights reserved.
