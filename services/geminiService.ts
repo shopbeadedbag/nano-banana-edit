@@ -83,7 +83,7 @@ async function withRetry<T>(
 // Configuration
 const MODEL_NAME = 'gemini-2.5-flash-image'; 
 // HARDCODED API KEY AS REQUESTED
-const API_KEY = 'AIzaSyDKA59ESviJBR1401czcFF497lXDVkCx8U';
+const API_KEY = 'AIzaSyBxNOEfrwAZO_fyYKEqsUXXnS7f37EPDik';
 
 /**
  * Edit an existing image based on a prompt (Image-to-Image)
