@@ -1,15 +1,13 @@
 import React, { useEffect } from 'react';
-import { Translation, LangCode } from './locales';
 
-interface SeoHeadProps {
-  t: Translation;
-  lang: LangCode;
-}
-
-const SeoHead: React.FC<SeoHeadProps> = ({ t, lang }) => {
+const SeoHead: React.FC = () => {
   useEffect(() => {
+    const title = "Nano Banana - Free AI Image Editor | Edit Photos with Text Prompts";
+    const description = "Edit photos instantly with Nano Banana, the free AI image editor powered by Gemini 2.5 Flash. Upload any picture, describe your changes, and let Nano Banana transform your images in seconds.";
+    const url = "https://bestimageeditor.online/";
+
     // 1. Update Document Title
-    document.title = t.seoTitle;
+    document.title = title;
 
     // 2. Update Meta Description
     let metaDesc = document.querySelector('meta[name="description"]');
@@ -18,7 +16,7 @@ const SeoHead: React.FC<SeoHeadProps> = ({ t, lang }) => {
         metaDesc.setAttribute('name', 'description');
         document.head.appendChild(metaDesc);
     }
-    metaDesc.setAttribute('content', t.seoDesc);
+    metaDesc.setAttribute('content', description);
     
     // 3. Update Open Graph & Twitter
     const updateMeta = (property: string, content: string) => {
@@ -26,39 +24,29 @@ const SeoHead: React.FC<SeoHeadProps> = ({ t, lang }) => {
       if (tag) tag.setAttribute('content', content);
     };
 
-    updateMeta('og:title', t.seoTitle);
-    updateMeta('og:description', t.seoDesc);
-    updateMeta('twitter:title', t.seoTitle);
-    updateMeta('twitter:description', t.seoDesc);
+    updateMeta('og:title', title);
+    updateMeta('og:description', description);
+    updateMeta('og:url', url);
+    updateMeta('twitter:title', title);
+    updateMeta('twitter:description', description);
+    updateMeta('twitter:url', url);
 
-    // 4. Update Canonical to Current URL
-    // While index.html points to root, dynamic pages should point to themselves
-    // to avoid "duplicate content" flags for the translated versions.
+    // 4. Update Canonical
     let linkCanonical = document.querySelector('link[rel="canonical"]');
-    const currentPath = window.location.pathname === '/' ? '' : window.location.pathname;
-    // Remove trailing slash if not root for consistency
-    const cleanPath = currentPath.endsWith('/') && currentPath.length > 1 ? currentPath.slice(0, -1) : currentPath;
-    const canonicalUrl = `https://bestimageeditor.online${cleanPath}`;
-
     if (linkCanonical) {
-        linkCanonical.setAttribute('href', canonicalUrl);
+        linkCanonical.setAttribute('href', url);
     } else {
         linkCanonical = document.createElement('link');
         linkCanonical.setAttribute('rel', 'canonical');
-        linkCanonical.setAttribute('href', canonicalUrl);
+        linkCanonical.setAttribute('href', url);
         document.head.appendChild(linkCanonical);
     }
-    
-    updateMeta('og:url', canonicalUrl);
-    updateMeta('twitter:url', canonicalUrl);
 
-    // 5. Update HTML Attributes
-    // Map 'vn' to 'vi' for ISO compliance
-    const isoLang = lang === 'vn' ? 'vi' : lang;
-    document.documentElement.lang = isoLang;
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    // 5. Attributes
+    document.documentElement.lang = 'en';
+    document.documentElement.dir = 'ltr';
 
-  }, [t, lang]);
+  }, []);
 
   return null;
 };

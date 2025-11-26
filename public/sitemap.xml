@@ -1,66 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://bestimageeditor.online/</loc>
     <lastmod>2025-02-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://bestimageeditor.online/" />
-    <xhtml:link rel="alternate" hreflang="es" href="https://bestimageeditor.online/es/" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://bestimageeditor.online/fr/" />
-    <xhtml:link rel="alternate" hreflang="pt" href="https://bestimageeditor.online/pt/" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://bestimageeditor.online/ru/" />
-    <xhtml:link rel="alternate" hreflang="ar" href="https://bestimageeditor.online/ar/" />
-    <xhtml:link rel="alternate" hreflang="id" href="https://bestimageeditor.online/id/" />
-    <xhtml:link rel="alternate" hreflang="vi" href="https://bestimageeditor.online/vn/" />
-    <xhtml:link rel="alternate" hreflang="th" href="https://bestimageeditor.online/th/" />
-  </url>
-  <url>
-    <loc>https://bestimageeditor.online/es/</loc>
-    <lastmod>2025-02-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://bestimageeditor.online/fr/</loc>
-    <lastmod>2025-02-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://bestimageeditor.online/pt/</loc>
-    <lastmod>2025-02-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://bestimageeditor.online/ru/</loc>
-    <lastmod>2025-02-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://bestimageeditor.online/ar/</loc>
-    <lastmod>2025-02-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://bestimageeditor.online/id/</loc>
-    <lastmod>2025-02-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://bestimageeditor.online/vn/</loc>
-    <lastmod>2025-02-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://bestimageeditor.online/th/</loc>
-    <lastmod>2025-02-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
   </url>
 </urlset>

@@ -2,34 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ImageFile } from './types';
 import { editImage, generateImageFromText } from './services/geminiService';
 import { LogoIcon, ChevronDownIcon, SpinnerIcon, XIcon, GlobeIcon, MenuIcon, InfoIcon, CopyIcon, ImageIcon, DownloadIcon, TextToImageIcon } from './components/icons';
-import { locales, LangCode } from './locales';
 import SeoHead from './SeoHead';
-
-// --- Routing Logic ---
-const SUPPORTED_LANGS: LangCode[] = ['en', 'es', 'fr', 'pt', 'ru', 'ar', 'id', 'vn', 'th'];
-const DEFAULT_LANG: LangCode = 'en';
-
-const getLangFromPath = (): LangCode => {
-  const path = window.location.pathname;
-  const firstSegment = path.split('/')[1]; 
-  if (firstSegment && SUPPORTED_LANGS.includes(firstSegment as LangCode)) {
-    return firstSegment as LangCode;
-  }
-  return DEFAULT_LANG;
-};
-
-const navigateToLang = (targetLang: LangCode) => {
-  const currentPath = window.location.pathname;
-  const segments = currentPath.split('/').filter(Boolean);
-  if (segments.length > 0 && SUPPORTED_LANGS.includes(segments[0] as LangCode)) {
-    segments.shift();
-  }
-  const cleanPath = segments.join('/');
-  const newPath = targetLang === DEFAULT_LANG 
-    ? `/${cleanPath}` 
-    : `/${targetLang}/${cleanPath}`;
-  window.location.href = newPath.replace('//', '/');
-};
 
 // --- Helpers ---
 const fileToImageFile = (file: File): Promise<ImageFile> => {
@@ -106,13 +79,6 @@ const PolicyPage: React.FC<PolicyPageProps> = ({ title, onClose, children }) => 
 };
 
 const App: React.FC = () => {
-  const currentLang = getLangFromPath();
-  const t = locales[currentLang] || locales['en'];
-  const langNames: Record<LangCode, string> = {
-      en: 'English', es: 'Español', fr: 'Français', pt: 'Português', 
-      ru: 'Русский', ar: 'العربية', id: 'Bahasa Indo', vn: 'Tiếng Việt', th: 'ไทย'
-  };
-
   type Mode = 'image-to-image' | 'text-to-image';
   const [mode, setMode] = useState<Mode>('image-to-image');
   const [originalImage, setOriginalImage] = useState<ImageFile | null>(null);
@@ -124,7 +90,6 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [autoRatio, setAutoRatio] = useState(true);
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [activePolicy, setActivePolicy] = useState<string | null>(null);
@@ -132,49 +97,64 @@ const App: React.FC = () => {
   const currentPrompt = mode === 'image-to-image' ? i2iPrompt : t2iPrompt;
   const setCurrentPrompt = mode === 'image-to-image' ? setI2iPrompt : setT2iPrompt;
   const currentResult = mode === 'image-to-image' ? i2iResult : t2iResult;
-  const langMenuRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const navLinks = [
-      { href: '#editor', label: t.navEditor },
-      { href: '#how-it-works', label: t.navHow },
-      { href: '#features', label: t.navFeatures },
-      { href: '#transformations', label: t.navTrans },
-      { href: '#faq', label: t.navFaq },
+      { href: '#editor', label: 'Editor' },
+      { href: '#how-it-works', label: 'How It Works' },
+      { href: '#features', label: 'Features' },
+      { href: '#transformations', label: 'Transformations' },
+      { href: '#faq', label: 'FAQ' },
   ];
 
   const faqList = [
-    { q: "What is Nano Banana AI Image Editor?", a: "Nano Banana is a conversational AI image editor that transforms photos based on natural language descriptions." },
-    { q: "How do I edit images with AI?", a: "Upload your photo, type a description of the edits you want, and click Apply." },
-    { q: "Is it free?", a: "Yes, Nano Banana offers free AI image editing capabilities powered by Gemini 2.5 Flash." }
+    { q: "What is Nano Banana AI Image Editor?", a: "Nano Banana is a conversational AI image editor that transforms photos based on natural language descriptions. Simply upload an image, describe how you want to edit it, and our AI will apply your changes instantly. It combines the power of advanced AI models with an intuitive chat-based interface." },
+    { q: "How do I edit images with AI?", a: "Upload your photo, type a description of the edits you want (like \"make it sunset\" or \"add dramatic lighting\"), select your preferred AI model (Fast, Pro, or Ultra), and click Apply. The AI will process your request and show you the edited image in seconds." },
+    { q: "What are the different AI models?", a: "Nano Banana Fast delivers quick results for simple edits. Nano Banana Pro provides enhanced quality for detailed work. Nano Banana Ultra unleashes maximum AI power for professional-grade transformations. Switch between Nano Banana models anytime to match your project needs." },
+    { q: "Can I undo or go back to previous edits?", a: "Yes! Nano Banana automatically saves your edit history with up to 10 versions. Click any previous version in the history stack to continue editing from that point or download earlier versions." },
+    { q: "What image formats are supported?", a: "Nano Banana supports all common image formats including JPG, PNG, and WEBP. Images must be at least 250x250 pixels for best results." },
+    { q: "How many credits does it cost?", a: "Credit costs vary by AI model: Fast costs 1 credit, Pro costs 3 credits, and Ultra costs 5 credits per edit. You can purchase credits or subscribe to Pixlr Plus for unlimited editing." },
+    { q: "Can I edit the same image multiple times?", a: "Absolutely! Each new prompt applies to your currently selected image in the history. You can continue refining and editing the same photo as many times as you want, building on previous edits or starting fresh from earlier versions." },
+    { q: "Is my image data private and secure?", a: "Yes, your privacy is our priority. Uploaded images are processed securely and are not shared or used for training purposes. All images are handled according to our privacy policy and industry security standards." }
   ];
 
   const featuresList = [
       {
-        title: t.featuresTitle,
-        description: "Nano Banana lets you edit images the way you think - with natural conversation. No complex tools needed.",
+        title: "Nano Banana Conversational AI Photo Editing",
+        description: "Nano Banana lets you edit images the way you think - with natural conversation. No complex tools or tutorials needed. Just describe what you want and Nano Banana's advanced AI understands and executes your creative vision instantly. From simple adjustments to dramatic transformations, Nano Banana's conversational editing makes professional results accessible to everyone.",
         imageUrl: "https://pixlr.com/images/prompter/conversational.webp",
+        position: "right"
+      },
+      {
+        title: "Nano Banana Edit History & Version Control",
+        description: "Never lose your creative progress with Nano Banana. The AI editor automatically saves every edit in an intuitive visual timeline. Click any previous Nano Banana version to continue editing from that point, or compare results side-by-side. Your Nano Banana editing journey is preserved, giving you complete creative freedom to explore and experiment.",
+        imageUrl: "https://pixlr.com/images/prompter/history.webp",
+        position: "left"
+      },
+      {
+        title: "Nano Banana AI Models - Fast, Pro, and Ultra",
+        description: "Nano Banana offers three powerful AI models to choose from. Nano Banana Fast delivers quick results for simple edits. Nano Banana Pro provides enhanced quality for detailed work. Nano Banana Ultra unleashes maximum AI power for professional-grade transformations. Switch between Nano Banana models anytime to match your project needs.",
+        imageUrl: "https://pixlr.com/images/prompter/banana.webp",
         position: "right"
       }
   ];
 
   const transformationsList = [
-      { title: "AI Celebrity Selfies", imageUrl: "https://pixlr.com/images/prompter/example/selfies-celebrities.webp" },
-      { title: "Ghibli & Anime Art Style", imageUrl: "https://pixlr.com/images/prompter/example/ghibli-style.webp" },
-      { title: "Retro 16-bit Pixel Art", imageUrl: "https://pixlr.com/images/prompter/example/pixel-art.webp" },
-      { title: "Cyberpunk Cityscapes", imageUrl: "https://pixlr.com/images/prompter/example/dslr-portraits.webp" }
+      { title: "AI Celebrity Selfies", description: "Create realistic selfie photos with your favorite celebrities using Nano Banana AI. Upload your photo and generate authentic-looking moments with movie stars, musicians, and famous personalities in stunning quality.", imageUrl: "https://pixlr.com/images/prompter/example/selfies-celebrities.webp" },
+      { title: "3D Figurine & Collectible Art", description: "Transform your photos into high-end collectible figurines with professional packaging design. Nano Banana creates museum-quality 3D models, perfect for personalized merchandise, display art, and unique gifts.", imageUrl: "https://pixlr.com/images/prompter/example/3d-box-figurine.webp" },
+      { title: "LEGO Minifigure Creator", description: "Convert yourself into a custom LEGO minifigure with personalized animal companion in a glass display case. Create unique collectible-style artwork with engraved details and museum-quality presentation.", imageUrl: "https://pixlr.com/images/prompter/example/lego-me.webp" },
+      { title: "Ghibli & Anime Art Style", description: "Transform your photos into beautiful Studio Ghibli-style artwork with Nano Banana AI. Get hand-drawn anime aesthetics, watercolor backgrounds, and that magical Ghibli feeling in your images.", imageUrl: "https://pixlr.com/images/prompter/example/ghibli-style.webp" },
+      { title: "DSLR Professional Portraits", description: "Achieve cinematic golden-hour portraits with professional DSLR quality using Nano Banana. Add bokeh backgrounds, perfect lighting, and film-grade color grading to your photos instantly.", imageUrl: "https://pixlr.com/images/prompter/example/dslr-portraits.webp" },
+      { title: "Time Travel Transformations", description: "Travel through decades with Nano Banana AI photo editor. Transform yourself into authentic 1890s Victorian portraits, groovy 1970s disco style, neon 1980s fashion, or any era with period-accurate clothing and aesthetics.", imageUrl: "https://pixlr.com/images/prompter/example/me-as-1980.webp" },
+      { title: "Renaissance & Classical Art", description: "Turn modern photos into timeless Renaissance masterpieces with Nano Banana. Create oil painting effects, classical portraiture, and museum-worthy artwork with authentic brush strokes and period styling.", imageUrl: "https://pixlr.com/images/prompter/example/renaissance-painting.webp" },
+      { title: "Pop Star & Concert Scenes", description: "Transform into a performing artist on stage with massive crowds and epic screens using Nano Banana AI. Create professional concert photography with dramatic stage lighting and arena-scale productions.", imageUrl: "https://pixlr.com/images/prompter/example/pop-star.webp" },
+      { title: "Extreme Adventure Photography", description: "Create breathtaking skydiving, mountain climbing, and extreme sports photos with Nano Banana AI. Generate hyperrealistic action shots with professional wide-angle camera effects and adrenaline-pumping perspectives.", imageUrl: "https://pixlr.com/images/prompter/example/sky-diving.webp" },
+      { title: "Retro 16-bit Pixel Art", description: "Convert your photos into nostalgic 16-bit pixel art and retro gaming graphics with Nano Banana. Perfect for creating vintage game-style avatars, social media content, and nostalgic digital art.", imageUrl: "https://pixlr.com/images/prompter/example/pixel-art.webp" },
+      { title: "Artistic Silhouette Effects", description: "Create mysterious and artistic silhouette photography with frosted glass effects using Nano Banana. Perfect for dramatic black and white portraits with professional gradient backgrounds and atmospheric lighting.", imageUrl: "https://pixlr.com/images/prompter/example/blurred-silhouette.webp" },
+      { title: "AI Object & Background Removal", description: "Remove unwanted objects, people, or background elements from photos while preserving all original details. Nano Banana's AI seamlessly fills removed areas maintaining resolution, sharpness, and natural textures.", imageUrl: "https://pixlr.com/images/prompter/example/remove-objects.webp" }
   ];
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (langMenuRef.current && !langMenuRef.current.contains(event.target as Node)) {
-        setIsLangMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [langMenuRef]);
-
-  const handleFileSelect = () => document.getElementById('file-upload')?.click();
+  const handleFileSelect = () => fileInputRef.current?.click();
   const handleCopyPrompt = () => navigator.clipboard.writeText(currentPrompt);
   
   const handleDownload = () => {
@@ -229,11 +209,11 @@ const App: React.FC = () => {
 
   return (
     <div className="bg-[#1C1C1E] text-gray-300 antialiased min-h-screen">
-       <SeoHead t={t} lang={currentLang} />
+       <SeoHead />
 
        <header className="sticky top-0 z-50 backdrop-blur-sm bg-[#1C1C1E]/80 border-b border-zinc-800">
             <nav className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-                <a href={currentLang === 'en' ? '/' : `/${currentLang}`} className="flex items-center space-x-2">
+                <a href="/" className="flex items-center space-x-2">
                     <LogoIcon />
                     <span className="font-semibold text-lg text-white">Nano Banana</span>
                 </a>
@@ -247,22 +227,7 @@ const App: React.FC = () => {
                 </ul>
 
                 <div className="flex items-center space-x-4">
-                    <div className="relative" ref={langMenuRef}>
-                        <button onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} className="flex items-center space-x-1 text-gray-300 hover:text-white transition-colors" aria-label="Language Selector">
-                            <GlobeIcon className="w-5 h-5" />
-                            <span className="hidden sm:inline text-sm uppercase">{currentLang}</span>
-                            <ChevronDownIcon className={`w-4 h-4 transition-transform ${isLangMenuOpen ? 'rotate-180' : ''}`} />
-                        </button>
-                        {isLangMenuOpen && (
-                            <div className="absolute right-0 mt-2 w-40 bg-zinc-900 border border-zinc-700 rounded-md shadow-lg py-1 max-h-80 overflow-y-auto">
-                                {SUPPORTED_LANGS.map((code) => (
-                                    <button key={code} onClick={() => { navigateToLang(code); setIsLangMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-zinc-800">
-                                        {langNames[code]}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    <span className="text-sm text-gray-300">English</span>
                     <div className="md:hidden">
                         <button onClick={() => setIsMobileMenuOpen(true)} aria-label="Menu"><MenuIcon className="w-6 h-6" /></button>
                     </div>
@@ -284,8 +249,8 @@ const App: React.FC = () => {
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-20">
         {/* Hero */}
         <section className="text-center max-w-4xl mx-auto mb-20 md:mb-32">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight text-white">{t.heroTitle}</h1>
-          <p className="text-lg md:text-xl text-gray-400 mb-10 leading-relaxed">{t.heroSubtitle}</p>
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight text-white">Edit Images with Nano Banana</h1>
+          <p className="text-lg md:text-xl text-gray-400 mb-10 leading-relaxed">Edit your photos instantly with Nano Banana, the free AI image editor powered by Gemini 2.5 Flash. Upload any picture, describe your changes, and let Nano Banana transform your images in seconds. No design skills required.</p>
         </section>
 
         {/* Editor */}
@@ -294,10 +259,10 @@ const App: React.FC = () => {
             <div className="flex justify-center mb-8">
                 <div className="bg-[#3a3a3c] rounded-full p-1 flex items-center w-full max-w-md">
                     <button onClick={() => setMode('image-to-image')} className={`w-1/2 py-2.5 text-sm font-semibold rounded-full transition-colors duration-300 flex items-center justify-center gap-2 ${mode === 'image-to-image' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:bg-zinc-700'}`}>
-                        <ImageIcon className="w-5 h-5" /> {t.modeI2I}
+                        <ImageIcon className="w-5 h-5" /> Image to Image
                     </button>
                     <button onClick={() => setMode('text-to-image')} className={`w-1/2 py-2.5 text-sm font-semibold rounded-full transition-colors duration-300 flex items-center justify-center gap-2 ${mode === 'text-to-image' ? 'bg-amber-500 text-black' : 'text-gray-300 hover:bg-zinc-700'}`}>
-                        <TextToImageIcon className="w-5 h-5" /> {t.modeT2I}
+                        <TextToImageIcon className="w-5 h-5" /> Text to Image
                     </button>
                 </div>
             </div>
@@ -307,7 +272,7 @@ const App: React.FC = () => {
                         <textarea 
                             value={currentPrompt} 
                             onChange={(e) => e.target.value.length <= 2000 && setCurrentPrompt(e.target.value)} 
-                            placeholder={t.inputPlaceholder} 
+                            placeholder="Input prompt here"
                             className="w-full bg-[#1c1c1c] border border-zinc-700 rounded-xl p-4 text-white h-36 resize-none" 
                             aria-label="Input Prompt"
                         />
@@ -319,7 +284,7 @@ const App: React.FC = () => {
                     </div>
                     <div>
                         <div className="flex items-center justify-between bg-[#1c1c1c] border border-zinc-700 rounded-xl p-4 mb-3">
-                            <span className="text-sm font-medium">{t.ratioAuto}</span>
+                            <span className="text-sm font-medium">Auto Ratio</span>
                             <input type="checkbox" checked={autoRatio} onChange={() => setAutoRatio(!autoRatio)} aria-label="Auto Ratio Toggle" />
                         </div>
                         <select 
@@ -336,22 +301,22 @@ const App: React.FC = () => {
                     </div>
                     {mode === 'image-to-image' && (
                         <div onClick={handleFileSelect} className="mt-2 w-full h-36 border-2 border-dashed border-zinc-600 rounded-xl flex items-center justify-center text-center hover:border-zinc-400 cursor-pointer bg-black/20" role="button" aria-label="Upload File">
-                            {originalImage ? <img src={originalImage.dataUrl} className="max-h-full max-w-full object-contain p-2" alt="Preview" /> : <p className="text-zinc-400 text-sm">{t.uploadBtn}</p>}
-                            <input id="file-upload" type="file" className="hidden" onChange={handleFileChange} accept="image/*" />
+                            {originalImage ? <img src={originalImage.dataUrl} className="max-h-full max-w-full object-contain p-2" alt="Preview" /> : <p className="text-zinc-400 text-sm">Click / Drag & Drop to Upload</p>}
+                            <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} accept="image/*" />
                         </div>
                     )}
                     <div className="border-t border-zinc-700 pt-6 mt-auto">
                         <button onClick={handleSubmit} disabled={isLoading} className="w-full py-3 font-semibold text-black bg-gradient-to-r from-pink-500 to-yellow-400 rounded-lg hover:opacity-90 disabled:opacity-50 mb-4 flex justify-center items-center">
-                            {isLoading ? <><SpinnerIcon className="w-5 h-5 mr-2 animate-spin" /> {t.generating}</> : t.generateBtn}
+                            {isLoading ? <><SpinnerIcon className="w-5 h-5 mr-2 animate-spin" /> Generating...</> : "Generate Now"}
                         </button>
                         <button onClick={handleDownload} disabled={!currentResult} className="w-full py-3 font-semibold text-white bg-zinc-800 border border-zinc-700 rounded-lg hover:bg-zinc-700 disabled:opacity-50 flex justify-center items-center">
-                            <DownloadIcon className="w-5 h-5 mr-2" /> {t.downloadBtn}
+                            <DownloadIcon className="w-5 h-5 mr-2" /> Download
                         </button>
                         {error && <p className="text-red-400 mt-2 text-sm">{error}</p>}
                     </div>
                 </div>
                 <div className="lg:col-span-8 bg-black rounded-2xl flex items-center justify-center min-h-[40vh] relative overflow-hidden">
-                    {currentResult ? <img src={currentResult} className="w-full h-full object-contain" alt="Generated Result" /> : <p className="text-zinc-500">Image Preview</p>}
+                    {currentResult ? <img src={currentResult} className="w-full h-full object-contain" alt="Generated Result" /> : <p className="text-zinc-500">Your generated image will appear here</p>}
                 </div>
             </div>
           </div>
@@ -359,56 +324,43 @@ const App: React.FC = () => {
 
         {/* How It Works */}
         <section id="how-it-works" className="py-20 md:py-32">
-             <h2 className="text-4xl font-bold text-white mb-12 text-center">{t.howToTitle}</h2>
+             <h2 className="text-4xl font-bold text-white mb-12 text-center">How to Use Nano Banana AI Image Editor</h2>
              <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
                 <div className="space-y-8">
-                   <div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold">1</div><p className="text-gray-300">Upload Image</p></div>
-                   <div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold">2</div><p className="text-gray-300">Enter Prompt</p></div>
-                   <div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold">3</div><p className="text-gray-300">Generate & Download</p></div>
+                   <div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold">1</div><div><h3 className="text-xl font-semibold text-white">Upload Your Image</h3><p className="text-gray-400 mt-1">Drag and drop or browse to select any photo you want to edit. Nano Banana supports all common image formats including JPG, PNG, and WEBP.</p></div></div>
+                   <div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold">2</div><div><h3 className="text-xl font-semibold text-white">Describe Your Vision</h3><p className="text-gray-400 mt-1">Type a natural language prompt describing how you want to transform your image. Be as creative or specific as you like - from simple color changes to complex artistic transformations.</p></div></div>
+                   <div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold">3</div><div><h3 className="text-xl font-semibold text-white">Choose Your Model</h3><p className="text-gray-400 mt-1">Select Fast for quick edits, Pro for better quality, or Ultra for the best results. Each model is optimized for different use cases and credit costs.</p></div></div>
+                   <div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold">4</div><div><h3 className="text-xl font-semibold text-white">Apply and Download</h3><p className="text-gray-400 mt-1">Click Apply and watch AI transform your image in seconds. Browse your edit history, make adjustments, or download your final masterpiece.</p></div></div>
                 </div>
-                <div className="hidden lg:block bg-zinc-800 w-full h-64 rounded-2xl"></div>
+                <div><img src="https://pixlr.com/images/prompter/nano-banan-ai-image-editor.webp" alt="How it works" className="rounded-2xl w-full h-auto object-cover" loading="lazy" /></div>
              </div>
         </section>
 
-        {/* Features - Optimized Images */}
+        {/* Features */}
         <section id="features" className="py-20 md:py-32 space-y-28">
            {featuresList.map((feature, idx) => (
-             <article key={idx} className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-                <div>
+             <article key={idx} className={`grid lg:grid-cols-2 gap-12 lg:gap-20 items-center ${feature.position === 'left' ? 'lg:flex-row-reverse' : ''}`}>
+                <div className={feature.position === 'left' ? 'lg:order-2' : ''}>
                    <h3 className="text-3xl font-bold text-white mb-6">{feature.title}</h3>
                    <p className="text-gray-400 leading-relaxed">{feature.description}</p>
                 </div>
-                {/* Lazy load feature images to prioritize LCP */}
-                <img 
-                    src={feature.imageUrl} 
-                    className="rounded-2xl w-full h-auto object-cover bg-zinc-800" 
-                    alt={feature.title} 
-                    loading="lazy"
-                    decoding="async"
-                    width="600"
-                    height="400"
-                />
+                <div className={feature.position === 'left' ? 'lg:order-1' : ''}>
+                    <img src={feature.imageUrl} className="rounded-2xl w-full h-auto object-cover bg-zinc-800" alt={feature.title} loading="lazy" decoding="async" width="600" height="400" />
+                </div>
              </article>
            ))}
         </section>
 
-        {/* Transformations - Optimized Grid */}
+        {/* Transformations */}
         <section id="transformations" className="py-20 md:py-32 text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">{t.transTitle}</h2>
-          <p className="text-gray-400 max-w-3xl mx-auto mb-16">{t.transSubtitle}</p>
+          <h2 className="text-4xl font-bold text-white mb-6">Popular Nano Banana AI Image Transformations</h2>
+          <p className="text-gray-400 max-w-3xl mx-auto mb-16">Explore trending AI-powered photo effects and creative transformations with Nano Banana.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             {transformationsList.map((item, index) => (
               <article key={index} className="bg-[#2C2C2E] p-5 rounded-2xl text-left">
-                <img 
-                    src={item.imageUrl} 
-                    alt={item.title} 
-                    className="rounded-lg w-full h-auto object-cover mb-4 aspect-[3/2] bg-zinc-800" 
-                    loading="lazy" 
-                    decoding="async"
-                    width="300"
-                    height="200"
-                />
+                <img src={item.imageUrl} alt={item.title} className="rounded-lg w-full h-auto object-cover mb-4 aspect-[3/2] bg-zinc-800" loading="lazy" decoding="async" width="300" height="200" />
                 <h4 className="font-semibold text-white mb-1">{item.title}</h4>
+                <p className="text-sm text-gray-400">{item.description}</p>
               </article>
             ))}
           </div>
@@ -416,8 +368,8 @@ const App: React.FC = () => {
 
         {/* FAQ */}
         <section id="faq" className="max-w-3xl mx-auto py-20 md:py-32">
-           <h2 className="text-4xl font-bold text-white text-center">{t.faqTitle}</h2>
-           <p className="text-lg text-gray-400 text-center mb-16">{t.faqSubtitle}</p>
+           <h2 className="text-4xl font-bold text-white text-center">Frequently Asked Questions</h2>
+           <p className="text-lg text-gray-400 text-center mb-16">Do you have a question?</p>
            <div className="space-y-4">
               {faqList.map((item, i) => (
                   <div key={i} className="bg-[#2C2C2E] rounded-xl">
@@ -437,7 +389,7 @@ const App: React.FC = () => {
             <button onClick={() => setActivePolicy('privacy')} className="text-gray-400 hover:text-white text-sm">Privacy Policy</button>
             <button onClick={() => setActivePolicy('terms')} className="text-gray-400 hover:text-white text-sm">Terms of Service</button>
         </div>
-        <p className="text-gray-500">© {new Date().getFullYear()} Nano Banana. {t.footerRights}</p>
+        <p className="text-gray-500">© {new Date().getFullYear()} Nano Banana. All rights reserved.</p>
       </footer>
       
       {activePolicy && (
