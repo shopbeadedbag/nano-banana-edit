@@ -46,12 +46,13 @@ const handleGeminiError = (error: any): never => {
  * Retries an async operation with exponential backoff.
  * Useful for handling 429/503 errors from the API.
  * 
- * UPDATED: Increased initial delay to 5000ms to handle the 16s retry requirement from Google.
- * Sequence: 5s -> 10s -> 20s.
+ * UPDATED: Increased initial delay to 5000ms and retries to 4.
+ * Sequence: 5s -> 10s -> 20s -> 40s (Total coverage ~75s)
+ * This handles cases where Google requests a 45s wait time.
  */
 async function withRetry<T>(
     operation: () => Promise<T>, 
-    retries: number = 3, 
+    retries: number = 4, 
     initialDelay: number = 5000 
 ): Promise<T> {
     let lastError: any;
@@ -79,7 +80,7 @@ async function withRetry<T>(
                 throw error;
             }
 
-            const delay = initialDelay * Math.pow(2, i); // 5s, 10s, 20s...
+            const delay = initialDelay * Math.pow(2, i); // 5s, 10s, 20s, 40s
             console.warn(`⚠️ API Error (Attempt ${i + 1}/${retries}). Waiting ${delay}ms before retry...`);
             await new Promise(resolve => setTimeout(resolve, delay));
         }
@@ -91,9 +92,8 @@ async function withRetry<T>(
 const MODEL_NAME = 'gemini-2.5-flash-image'; 
 
 // HARDCODED API KEY
-// ⚠️ RECOMMENDATION: Generate a NEW key at aistudio.google.com and replace this one.
-// The current key may be rate-limited due to frequent usage.
-const API_KEY = 'AIzaSyBxNOEfrwAZO_fyYKEqsUXXnS7f37EPDik';
+// Updated to the new key provided by the user
+const API_KEY = 'AIzaSyDKA59ESviJBR1401czcFF497lXDVkCx8U';
 
 /**
  * Edit an existing image based on a prompt (Image-to-Image)
