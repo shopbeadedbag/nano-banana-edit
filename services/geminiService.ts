@@ -1,26 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
 
-// 1. Get API Key exclusively from environment variables
-const getApiKey = (): string => {
-  // STRICTLY use the environment variable process.env.API_KEY
-  // Fixing error: Property 'env' does not exist on type 'ImportMeta'
-  const apiKey = process.env.API_KEY;
-
-  if (!apiKey) {
-    console.error("❌ CRITICAL ERROR: API_KEY is missing in environment variables!");
-    // Return empty string to allow the error to be caught downstream if needed, 
-    // or checks in the functions below will fail gracefully.
-    return "";
-  }
-
-  // 2. Debugging: Log the key prefix to Console
-  // This helps you verify if the deployed app is using the NEW key or an OLD one.
-  // We slice it to keep it secure while allowing verification.
-  console.log("🔑 Gemini Service initialized. Using Key Prefix:", apiKey.slice(0, 8) + "...");
-  
-  return apiKey;
-};
-
 // Helper to parse and clean Gemini API errors
 const handleGeminiError = (error: any): never => {
   console.error("Gemini API Error Details:", error);
@@ -112,7 +91,8 @@ export const editImage = async (
   mimeType: string,
   prompt: string
 ): Promise<string> => {
-  const apiKey = getApiKey();
+  // Use process.env.API_KEY directly as per guidelines
+  const apiKey = process.env.API_KEY;
   if (!apiKey) throw new Error("API Key not configured");
 
   return withRetry(async () => {
@@ -132,9 +112,6 @@ export const editImage = async (
             { text: prompt },
           ],
         },
-        // Note: responseModalities not strictly needed if model defaults to image, 
-        // but helps ensure intent if supported. 
-        // For now, we rely on the model returning an image part.
       });
 
       // Extract image from response
@@ -168,7 +145,8 @@ export const editImage = async (
 export const generateImageFromText = async (
   prompt: string
 ): Promise<string> => {
-  const apiKey = getApiKey();
+  // Use process.env.API_KEY directly as per guidelines
+  const apiKey = process.env.API_KEY;
   if (!apiKey) throw new Error("API Key not configured");
 
   return withRetry(async () => {
