@@ -1,7 +1,7 @@
 import React from 'react';
 
 export const LogoIcon = ({ className }: { className?: string }) => (
-    <img src="/icon.png" alt="Nano Banana" className={className || "w-8 h-8"} />
+    <img src="https://www.bestimageeditor.online/assets/icon-DrMS04Sm.png" alt="Nano Banana" className={className || "w-8 h-8"} />
 );
 
 export const UploadIcon = ({ className }: { className?: string }) => (
