@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ImageFile } from './types';
 import { editImage, generateImageFromText } from './services/geminiService';
-import { LogoIcon, ChevronDownIcon, SpinnerIcon, XIcon, GlobeIcon, MenuIcon, InfoIcon, CopyIcon, ImageIcon, DownloadIcon, TextToImageIcon } from './components/icons';
+import { LogoIcon, ChevronDownIcon, SpinnerIcon, XIcon, GlobeIcon, MenuIcon, InfoIcon, CopyIcon, ImageIcon, DownloadIcon, TextToImageIcon, CheckIcon } from './components/icons';
 import SeoHead from './SeoHead';
 
 // --- Helpers ---
@@ -104,6 +104,7 @@ const App: React.FC = () => {
       { href: '#how-it-works', label: 'How It Works' },
       { href: '#features', label: 'Features' },
       { href: '#transformations', label: 'Transformations' },
+      { href: '#pricing', label: 'Pricing' },
       { href: '#faq', label: 'FAQ' },
   ];
 
@@ -152,6 +153,69 @@ const App: React.FC = () => {
       { title: "Retro 16-bit Pixel Art", description: "Convert your photos into nostalgic 16-bit pixel art and retro gaming graphics with Nano Banana. Perfect for creating vintage game-style avatars, social media content, and nostalgic digital art.", imageUrl: "https://pixlr.com/images/prompter/example/pixel-art.webp" },
       { title: "Artistic Silhouette Effects", description: "Create mysterious and artistic silhouette photography with frosted glass effects using Nano Banana. Perfect for dramatic black and white portraits with professional gradient backgrounds and atmospheric lighting.", imageUrl: "https://pixlr.com/images/prompter/example/blurred-silhouette.webp" },
       { title: "AI Object & Background Removal", description: "Remove unwanted objects, people, or background elements from photos while preserving all original details. Nano Banana's AI seamlessly fills removed areas maintaining resolution, sharpness, and natural textures.", imageUrl: "https://pixlr.com/images/prompter/example/remove-objects.webp" }
+  ];
+
+  const pricingList = [
+      {
+          name: "Starter Plan",
+          price: "$15",
+          period: "/ month",
+          credits: "150 credits / month",
+          approx: "≈75 images",
+          features: [
+              "75 high-quality AI images per month",
+              "Access to Nano Banana Fast model",
+              "All standard style templates",
+              "Standard generation speed",
+              "JPG/PNG download formats",
+              "Basic customer support",
+              "Commercial use license"
+          ],
+          buttonText: "Start with Starter",
+          highlight: false
+      },
+      {
+          name: "Pro Plan",
+          price: "$39",
+          period: "/ month",
+          credits: "800 credits / month",
+          approx: "≈400 images",
+          features: [
+              "400 high-quality images per month",
+              "Access to Nano Banana Pro + Gemini 2.5 Flash models",
+              "Advanced style templates (Ghibli, 3D, DSLR, Renaissance, etc.)",
+              "Priority generation queue",
+              "JPG/PNG/WebP downloads",
+              "Batch generation",
+              "Advanced editing tools (object removal, enhancements, re-paint)",
+              "Priority support",
+              "Commercial license"
+          ],
+          buttonText: "Get Pro Plan",
+          highlight: true,
+          label: "Most Popular"
+      },
+      {
+          name: "Ultra Plan",
+          price: "$160",
+          period: "/ month",
+          credits: "4600 credits / month",
+          approx: "≈2300 images",
+          features: [
+              "2300 high-quality AI images per month",
+              "Access to Nano Banana Ultra + high-performance models",
+              "Fastest generation speeds",
+              "All templates + all future model access",
+              "JPG/PNG/WebP/TIFF downloads",
+              "Large-scale batch generation",
+              "Professional editing tool suite",
+              "Team management & permissions",
+              "Dedicated account manager",
+              "Commercial license"
+          ],
+          buttonText: "Upgrade to Ultra",
+          highlight: false
+      }
   ];
 
   const handleFileSelect = () => fileInputRef.current?.click();
@@ -364,6 +428,54 @@ const App: React.FC = () => {
               </article>
             ))}
           </div>
+        </section>
+
+        {/* Pricing */}
+        <section id="pricing" className="py-20 md:py-32">
+            <div className="text-center max-w-3xl mx-auto mb-16">
+                <h2 className="text-4xl font-bold text-white mb-6">Simple, Transparent Pricing</h2>
+                <p className="text-lg text-gray-400">Choose the perfect plan for your creative needs. Upgrade, downgrade, or cancel anytime.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                {pricingList.map((plan, index) => (
+                    <div 
+                        key={index} 
+                        className={`relative rounded-2xl p-8 flex flex-col h-full bg-[#2C2C2E] ${plan.highlight ? 'ring-2 ring-pink-500 shadow-[0_0_40px_rgba(236,72,153,0.15)] scale-105 z-10' : 'border border-zinc-700'}`}
+                    >
+                        {plan.label && (
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-pink-500 to-yellow-400 text-black text-sm font-bold px-4 py-1 rounded-full whitespace-nowrap">
+                                {plan.label}
+                            </div>
+                        )}
+                        <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
+                        <div className="flex items-baseline mb-4">
+                            <span className="text-4xl font-bold text-white">{plan.price}</span>
+                            <span className="text-gray-400 ml-2">{plan.period}</span>
+                        </div>
+                        <div className="mb-6">
+                             <p className="text-pink-400 font-medium">{plan.credits}</p>
+                             <p className="text-sm text-gray-500">{plan.approx}</p>
+                        </div>
+                        <ul className="space-y-4 mb-8 flex-grow">
+                            {plan.features.map((feature, i) => (
+                                <li key={i} className="flex items-start text-sm text-gray-300">
+                                    <CheckIcon className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                                    <span>{feature}</span>
+                                </li>
+                            ))}
+                        </ul>
+                        <button 
+                            className={`w-full py-3 rounded-lg font-bold transition-all ${
+                                plan.highlight 
+                                ? 'bg-gradient-to-r from-pink-500 to-yellow-400 text-black hover:opacity-90' 
+                                : 'bg-zinc-800 text-white border border-zinc-700 hover:bg-zinc-700'
+                            }`}
+                        >
+                            {plan.buttonText}
+                        </button>
+                    </div>
+                ))}
+            </div>
         </section>
 
         {/* FAQ */}
