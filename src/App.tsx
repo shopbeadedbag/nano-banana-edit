@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ImageFile } from './types';
-import { editImage, generateImageFromText } from './services/geminiService';
-import { LogoIcon, ChevronDownIcon, SpinnerIcon, XIcon, GlobeIcon, MenuIcon, InfoIcon, CopyIcon, ImageIcon, DownloadIcon, TextToImageIcon, CheckIcon } from './components/icons';
+import React, { useState, useRef } from 'react';
+import { ImageFile } from '../types';
+import { editImage, generateImageFromText } from '../services/geminiService';
+import { LogoIcon, SpinnerIcon, XIcon, MenuIcon, CopyIcon, ImageIcon, DownloadIcon, TextToImageIcon, CheckIcon } from './components/icons';
 import SeoHead from './SeoHead';
 
 // --- Helpers ---
