@@ -16,6 +16,7 @@ async function callBackendApi(payload: any): Promise<string> {
         const data = await response.json();
 
         if (!response.ok) {
+            // Throw the specific error returned by the backend (e.g., "API Key Invalid", "Quota Exceeded")
             throw new Error(data.error || `Server Error: ${response.status} ${response.statusText}`);
         }
 
@@ -23,7 +24,7 @@ async function callBackendApi(payload: any): Promise<string> {
             return data.image;
         }
 
-        throw new Error(data.error || "Unknown error occurred");
+        throw new Error(data.error || "Unknown error occurred: No image data returned.");
     } catch (error: any) {
         console.error("API Call Failed:", error);
         throw new Error(error.message || "Failed to connect to the server.");
